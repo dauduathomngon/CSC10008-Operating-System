@@ -1,4 +1,20 @@
 import sys
+class FAT:
+    def __init__(self, data) -> None:
+        self.entry_size = 4
+        self.elements=[]
+        self.data = data
+        for i in range(0, len(data),self.entry_size):
+            self.elements.append(int.from_bytes(self.data[i:i+4],byteorder=sys.byteorder))
+
+    def get_chain(self, index:int)-> list[int]:
+        index_list = []
+        while True:
+            index_list.append(index)
+            index = self.elements[index]
+            if index == 0x0FFFFFFF or index == 0x0FFFFFF7:
+                break
+            return index_list 
 class FAT32:
     # Constructor - Format name example: "D:"
     def __init__(self, name:str) -> None:
@@ -24,6 +40,11 @@ class FAT32:
             self.boot_sector = {}
             # Reading bootsector (Read and convert boot_sector_raw)
             self.reading_boot_sector()
+            # Read FAT table
+            self.FAT_size
+            self.FAT_table:list[FAT]=[]
+            self.readFAT_table()
+            
         except Exception as e:
             print(f"[Error] {e}")
             
@@ -87,3 +108,10 @@ class FAT32:
         self.boot_sector['Signature'] = self.boot_sector_raw[0x1FE:0x200]
         # Starting sector of data
         self.boot_sector['Starting Sector of Data'] = self.boot_sector['Reserved Sectors'] + self.boot_sector['No. Copies of FAT'] * self.boot_sector['Sectors Per FAT']
+        
+        
+    # Read FAT table
+    def readFAT_table(self)->None:
+            self.FAT_size = self.boot_sector['Bytes Per Sector']*self.boot_sector['Sectors Per FAT']
+            for _ in range(self.boot_sector['No. Copies of FAT']):
+                self.FAT_table.append(FAT(self.fd.read(self.FAT_size)))
