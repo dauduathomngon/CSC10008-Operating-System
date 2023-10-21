@@ -47,24 +47,43 @@ class FAT32:
            
     # Reading boot sector
     def reading_boot_sector(self):
+         # Jump Boot code: Offset 0 size 3
         self.boot_sector['Jump_Code'] = self.boot_sector_raw[:3]
+        # OEM Name: offset 3 size 8
         self.boot_sector['OEM_ID'] = self.boot_sector_raw[3:0xB]
+        # Bytes per sector: offset B size 2
         self.boot_sector['Bytes Per Sector'] = int.from_bytes(self.boot_sector_raw[0xB:0xD], byteorder=sys.byteorder)
+        # Sector per cluster: offset D size 1
         self.boot_sector['Sectors Per Cluster'] = int.from_bytes(self.boot_sector_raw[0xD:0xE], byteorder=sys.byteorder)
+        # Reserved sectors count: offset E size 2
         self.boot_sector['Reserved Sectors'] = int.from_bytes(self.boot_sector_raw[0xE:0x10], byteorder=sys.byteorder)
+        # Number of FAT tables: offset 10 size 1
         self.boot_sector['No. Copies of FAT'] = int.from_bytes(self.boot_sector_raw[0x10:0x11], byteorder=sys.byteorder)
+        # Volume type: offset 15 size 1
         self.boot_sector['Media Descriptor'] = self.boot_sector_raw[0x15:0x16]
+        # Sectors per track: offset 18 size 2
         self.boot_sector['Sectors Per Track'] = int.from_bytes(self.boot_sector_raw[0x18:0x1A], byteorder=sys.byteorder)
+        # Number of heads: offset 1A size 2
         self.boot_sector['No. Heads'] = int.from_bytes(self.boot_sector_raw[0x1A:0x1C], byteorder=sys.byteorder)
+        # Number of sectors in volume: offset 20 size 4
         self.boot_sector['No. Sectors In Volume'] = int.from_bytes(self.boot_sector_raw[0x20:0x24], byteorder=sys.byteorder)
+        # Number of sectors in a FAT table: offset 24 size 4
         self.boot_sector['Sectors Per FAT'] = int.from_bytes(self.boot_sector_raw[0x24:0x28], byteorder=sys.byteorder)
+        # Ext Flags: offset 28 size 2
         self.boot_sector['Flags'] = int.from_bytes(self.boot_sector_raw[0x28:0x2A], byteorder=sys.byteorder)
+        # FAT32 version: offset 2A size 2
         self.boot_sector['FAT32 Version'] = self.boot_sector_raw[0x2A:0x2C]
+        # Starting cluster RDET: offset 2C size 2
         self.boot_sector['Starting Cluster of RDET'] = int.from_bytes(self.boot_sector_raw[0x2C:0x30], byteorder=sys.byteorder)
-        self.boot_sector['Sector Number of the FileSystem Information Sector'] = self.boot_sector_raw[0x30:0x32]
-        self.boot_sector['Sector Number of BackupBoot'] = self.boot_sector_raw[0x32:0x34]
+        # Sector Number of the FileSystem Information Sector: offset 30 size 2
+        #self.boot_sector['Sector Number of the FileSystem Information Sector'] = self.boot_sector_raw[0x30:0x32]
+        # Sector Number of BackupBoot: offset 32 size 2
+        #self.boot_sector['Sector Number of BackupBoot'] = self.boot_sector_raw[0x32:0x34]
+        # FAT type: offset 52 size 8
         self.boot_sector['FAT Name'] = self.boot_sector_raw[0x52:0x5A]
-        self.boot_sector['Executable Code'] = self.boot_sector_raw[0x5A:0x1FE]
+        # Boot code: offset 5A siuze 420
+        #self.boot_sector['Executable Code'] = self.boot_sector_raw[0x5A:0x1FE]
+        # Signature: offset 1FE size 2
         self.boot_sector['Signature'] = self.boot_sector_raw[0x1FE:0x200]
+        # Starting sector of data
         self.boot_sector['Starting Sector of Data'] = self.boot_sector['Reserved Sectors'] + self.boot_sector['No. Copies of FAT'] * self.boot_sector['Sectors Per FAT']
-                
