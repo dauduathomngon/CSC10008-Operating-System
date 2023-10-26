@@ -1,15 +1,12 @@
-# for more beautiful traceback
-from UI.utils import GLOBAL_CONSOLE
-
 from NTFS.boot_sector import BootSector
 from NTFS.mft import MFTFile
+# for more beautiful traceback
+from UI.utils import GLOBAL_CONSOLE
 
 class NTFS:
     def __init__(self, vol_name: str) -> None:
         self.name = vol_name
-
         self.boot_sector = BootSector(self.name)
-
         self.mft_file = MFTFile(self.boot_sector)
 
     @staticmethod

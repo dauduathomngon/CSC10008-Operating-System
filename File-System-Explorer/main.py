@@ -1,6 +1,7 @@
 import string
 from ctypes import windll
 from typing import List
+from icecream import ic
 
 from UI.utils import GLOBAL_CONSOLE
 from NTFS.ntfs import NTFS
@@ -26,8 +27,5 @@ if __name__=="__main__":
     if NTFS.check_ntfs(drives[1]):
         ntfs = NTFS(drives[1])
         GLOBAL_CONSOLE.print(ntfs.boot_sector)
-
-        GLOBAL_CONSOLE.print(ntfs.mft_file.info_offset)
-        GLOBAL_CONSOLE.print(ntfs.mft_file.info_len)
     else:
         exit()

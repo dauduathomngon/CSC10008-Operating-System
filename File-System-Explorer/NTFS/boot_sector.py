@@ -1,3 +1,5 @@
+import sys
+
 # for more beautiful traceback
 from UI.utils import GLOBAL_CONSOLE
 
@@ -46,27 +48,27 @@ class BootSector:
     @property
     def bytes_per_sector(self) -> int:
         # bytes_per_sector at offset 0x0B with length WORD (2 byte)
-        return int.from_bytes(self.data[0x0B : 0x0B + WORD], byteorder="little")
+        return int.from_bytes(self.data[0x0B : 0x0B + WORD], byteorder=sys.byteorder)
 
     @property
     def sectors_per_cluster(self) -> int:
         # sectors_per_cluster at offset 0x0D with length BYTE
-        return int.from_bytes(self.data[0x0D : 0x0D + BYTE], byteorder="little")
+        return int.from_bytes(self.data[0x0D : 0x0D + BYTE], byteorder=sys.byteorder)
 
     @property
     def total_sectors(self) -> int:
         # total_sectors at offset 0x28 with length LONGLONG
-        return int.from_bytes(self.data[0x28 : 0x28 + LONGLONG], byteorder="little")
+        return int.from_bytes(self.data[0x28 : 0x28 + LONGLONG], byteorder=sys.byteorder)
 
     @property
     def cluster_MFT(self) -> int:
         # cluster_MFT at offset 0x30 with length LONGLONG
-        return int.from_bytes(self.data[0x30 : 0x30 + LONGLONG], byteorder="little")
+        return int.from_bytes(self.data[0x30 : 0x30 + LONGLONG], byteorder=sys.byteorder)
 
     @property
     def cluster_MFF_mir(self) -> int:
         # cluster_MFT_mir at offset 0x38 with length LONGLONG
-        return int.from_bytes(self.data[0x38 : 0x38 + LONGLONG], byteorder="little")
+        return int.from_bytes(self.data[0x38 : 0x38 + LONGLONG], byteorder=sys.byteorder)
 
     @property
     def MFT_entry_size(self):
@@ -77,7 +79,7 @@ class BootSector:
         # - negative: it shows number of bytes of entry in log2
         # (segment is negative because size of cluster > size of entry)
 
-        segment = int.from_bytes(self.data[0x40 : 0x40 + BYTE], byteorder="little", signed=True)
+        segment = int.from_bytes(self.data[0x40 : 0x40 + BYTE], byteorder=sys.byteorder, signed=True)
         if segment > 0:
             return segment * self.cluster_size
         else:
@@ -90,12 +92,12 @@ class BootSector:
     @property
     def reserved_sectors(self):
         # reserved_sectors at offset 0x0E with length WORD
-        return int.from_bytes(self.data[0x0E : 0x0E + WORD], byteorder="little")
+        return int.from_bytes(self.data[0x0E : 0x0E + WORD], byteorder=sys.byteorder)
 
     @property
     def serial_number(self):
         # serial_number at offset 0x48 with length LONGLONG
-        return int.from_bytes(self.data[0x48 : 0x48 + LONGLONG], byteorder="little")
+        return int.from_bytes(self.data[0x48 : 0x48 + LONGLONG], byteorder=sys.byteorder)
 
     def described(self):
         return ( 
