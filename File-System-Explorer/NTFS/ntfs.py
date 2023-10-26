@@ -19,21 +19,28 @@ class NTFS:
 
         # entry list
         self.entry_list: List[MFTEntry] = []
+
         # add all remaining entry to entry list
         sector_per_entry = int(self.boot_sector.MFT_entry_size / self.boot_sector.bytes_per_sector)
+        entry_count = 2
+
         for _ in range(sector_per_entry, self.mft_file.num_sector_mft, sector_per_entry):
             data = self.boot_sector.f.read(self.boot_sector.MFT_entry_size)
-            ic(data[:20])
-            entry = MFTEntry(data)
-            if entry.flag == 0 or entry.flag == 2:
-                del entry
-            else:
-                self.entry_list.append(entry)
 
-        ic([entry.data_attr[:10] for entry in self.entry_list])
+            if data[:4] == b"FILE":
+                # Because entry 13->16 reserved for $Extend extension
+                if entry_count >= 13 and entry_count <= 16:
+                    entry_count += 1
+                    continue
 
-        # for entry in self.entry_list:
-        #     ic(entry.data.signature[0])
+                entry = MFTEntry(data)
+                if entry.flag == 0 or entry.flag == 2:
+                    del entry
+                else:
+                    self.entry_list.append(entry)
+
+                entry_count += 1
+
 
     @staticmethod
     def check_ntfs(vol_name: str) -> bool:

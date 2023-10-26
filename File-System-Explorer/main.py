@@ -24,8 +24,8 @@ def get_drives() -> List[str]:
 if __name__=="__main__":
     drives = get_drives()
 
-    if NTFS.check_ntfs(drives[3]):
-        ntfs = NTFS(drives[3])
+    if NTFS.check_ntfs(drives[2]):
+        ntfs = NTFS(drives[2])
         GLOBAL_CONSOLE.print(ntfs.boot_sector)
 
     else:

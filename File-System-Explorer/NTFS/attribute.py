@@ -38,7 +38,7 @@ class StandardInfo:
         
     @property
     def offset_to_content(self):
-        return int.from_bytes(self.data[self.start_offset+20:self.start_offset + 20 + WORD], 
+        return int.from_bytes(self.data[self.start_offset+20 : self.start_offset + 20 + WORD], 
                               byteorder= sys.byteorder) 
 
     @property
@@ -81,7 +81,7 @@ class FileName:
     
     @property
     def offset_to_content(self):
-        return int.from_bytes(self.data[self.start_offset+20:self.start_offset + 20 + DWORD], 
+        return int.from_bytes(self.data[self.start_offset+20:self.start_offset + 20 + WORD], 
                               byteorder= sys.byteorder) 
 
     @property 
@@ -94,7 +94,7 @@ class FileName:
     
     @property
     def file_name_length(self):
-        return int.from_bytes(self.data[self.start_content_offset+64])
+        return self.data[self.start_content_offset+64]
     
     @property
     def file_name(self):
