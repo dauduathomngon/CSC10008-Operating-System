@@ -64,7 +64,6 @@ class BootSector:
         # - positive: it shows number of clusters per entry.
         # - negative: it shows number of bytes of entry in log2
         # (segment is negative because size of cluster > size of entry)
-
         segment = int.from_bytes(self.data[0x40 : 0x40 + BYTE], byteorder=sys.byteorder, signed=True)
         if segment > 0:
             return segment * self.cluster_size

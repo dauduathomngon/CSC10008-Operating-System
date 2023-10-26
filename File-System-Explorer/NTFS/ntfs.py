@@ -15,7 +15,6 @@ class NTFS:
 
         # first $MFT file
         mft_offset = self.boot_sector.cluster_MFT * self.boot_sector.cluster_size
-
         self.boot_sector.f.seek(mft_offset)
         data = self.boot_sector.f.read(self.boot_sector.MFT_entry_size)
         self.mft_file = MFTEntry(data)

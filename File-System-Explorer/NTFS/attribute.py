@@ -30,13 +30,14 @@ class StandardInfo:
         self.data = data
         self.start_offset = start_offset
 
-        signature = int.from_bytes(self.data[start_offset:start_offset+4], byteorder=sys.byteorder)
+        signature = int.from_bytes(self.data[start_offset : start_offset + 4],
+                                   byteorder=sys.byteorder)
         if signature != 0x10:
             raise Exception("Not Standard Info Attribute!")
         
     @property
     def offset_to_content(self):
-        return int.from_bytes(self.data[self.start_offset+20 : self.start_offset + 20 + WORD], 
+        return int.from_bytes(self.data[self.start_offset + 20 : self.start_offset + 20 + WORD], 
                               byteorder= sys.byteorder) 
 
     @property
@@ -51,15 +52,17 @@ class StandardInfo:
  
     @property
     def created_time(self):
-        return to_datetime(int.from_bytes(self.data[self.start_content_offset: self.start_content_offset + 8], byteorder=sys.byteorder))
+        return to_datetime(int.from_bytes(self.data[self.start_content_offset : self.start_content_offset + 8],
+                                          byteorder=sys.byteorder))
 
     @property
     def last_modified_time(self):
-        return to_datetime(int.from_bytes(self.data[self.start_content_offset+8: self.start_content_offset + 16], byteorder=sys.byteorder))
+        return to_datetime(int.from_bytes(self.data[self.start_content_offset + 8: self.start_content_offset + 16],
+                                          byteorder=sys.byteorder))
 
     @property 
     def flags(self):
-        return FileAttribute(int.from_bytes(self.data[self.start_content_offset + 32: self.start_content_offset+36]))
+        return FileAttribute(int.from_bytes(self.data[self.start_content_offset + 32: self.start_content_offset + 36]))
 
 
 class FileName:
@@ -79,7 +82,7 @@ class FileName:
     
     @property
     def offset_to_content(self):
-        return int.from_bytes(self.data[self.start_offset+20:self.start_offset + 20 + WORD], 
+        return int.from_bytes(self.data[self.start_offset + 20 : self.start_offset + 20 + WORD], 
                               byteorder= sys.byteorder) 
 
     @property 
@@ -96,7 +99,7 @@ class FileName:
     
     @property
     def file_name(self):
-        return  self.data[self.start_offset_content + 66 :self.start_offset_content + 66 + self.file_name_length * 2].decode('utf-16le')
+        return self.data[self.start_offset_content + 66 : self.start_offset_content + 66 + self.file_name_length * 2].decode('utf-16le')
     
 class Data:
     def __init__(self, data, start_offset) -> None:
@@ -121,20 +124,30 @@ class Data:
         Return content if data is resident or else return cluster_info
         """
         if self.non_resident:
+            # take first 4 bit at start_offset + 0x40
             offset = (self.data[self.start_offset + 0x40] & 0xF0) >> 4
+            # take last 4 bit at start_offset + 0x40
             size = self.data[self.start_offset + 0x40] & 0x0F
-            self.cluster_size = int.from_bytes(self.data[self.start_offset + 0x41: self.start_offset + 0x41 + size], byteorder='little')
-            self.cluster_offset =  int.from_bytes(self.data[self.start_offset + 0x41 + size: self.start_offset + 0x41 + size + offset], byteorder='little')
+
+            self.cluster_size = int.from_bytes(self.data[self.start_offset + 0x41 : self.start_offset + 0x41 + size],
+                                               byteorder=sys.byteorder)
+
+            self.cluster_offset =  int.from_bytes(self.data[self.start_offset + 0x41 + size : self.start_offset + 0x41 + size + offset],
+                                                  byteorder=sys.byteorder)
+
             return (self.cluster_size, self.cluster_offset)
 
         else:
-            offset = int.from_bytes(self.data[self.start_offset + 0x14:self.start_offset + 0x16], byteorder='little')
+            offset = int.from_bytes(self.data[self.start_offset + 0x14 : self.start_offset + 0x16],
+                                    byteorder=sys.byteorder)
             self.content = self.data[self.start_offset + offset:self.start_offset + offset + self.data['size']]
             return self.content
 
     @property
     def data_size(self):
         if self.non_resident:
-            return int.from_bytes(self.data[self.start_offset + 0x30: self.start_offset + 0x38], byteorder='little')
+            return int.from_bytes(self.data[self.start_offset + 0x30 : self.start_offset + 0x38],
+                                  byteorder=sys.byteorder)
         else:
-            return int.from_bytes(self.data[self.start_offset+0x10:self.start_offset+0x14], byteorder='little')
+            return int.from_bytes(self.data[self.start_offset + 0x10 : self.start_offset + 0x14],
+                                  byteorder=sys.byteorder)
