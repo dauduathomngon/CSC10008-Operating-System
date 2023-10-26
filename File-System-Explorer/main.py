@@ -27,5 +27,6 @@ if __name__=="__main__":
     if NTFS.check_ntfs(drives[3]):
         ntfs = NTFS(drives[3])
         GLOBAL_CONSOLE.print(ntfs.boot_sector)
+
     else:
         exit()

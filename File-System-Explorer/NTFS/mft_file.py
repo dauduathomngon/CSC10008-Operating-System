@@ -1,12 +1,9 @@
 import sys
 
 from NTFS.boot_sector import BootSector
+from const import *
 # for more beautiful traceback
 from UI.utils import GLOBAL_CONSOLE
-
-LONGLONG = 8
-WORD = 2
-BYTE = 1
 
 class MFTFile:
     """
@@ -31,7 +28,7 @@ class MFTFile:
     def info_attr_len(self):
         # length of ($STANDARD_INFORMATION) start at byte 4 (after offset) and length DWORD (4 byte)
         start_byte = self.info_attr_offset + 4
-        return int.from_bytes(self.data[start_byte : start_byte + (WORD * 2)], 
+        return int.from_bytes(self.data[start_byte : start_byte + DWORD], 
                               byteorder=sys.byteorder)
 
     @property
@@ -43,7 +40,7 @@ class MFTFile:
     def name_attr_len(self):
         # length of ($FILE_NAME) start at byte 4 (after offset) and length DWORD (4 byte)
         start_byte = self.name_attr_offset + 4
-        return int.from_bytes(self.data[start_byte : start_byte + (WORD * 2)], 
+        return int.from_bytes(self.data[start_byte : start_byte + DWORD], 
                               byteorder=sys.byteorder)
 
     @property
@@ -55,7 +52,7 @@ class MFTFile:
     def data_attr_len(self):
         # length of ($DATA) start at byte 4 (after offset) and length DWORD (4 byte)
         start_byte = self.data_attr_offset + 4
-        return int.from_bytes(self.data[start_byte : start_byte + (WORD * 2)], 
+        return int.from_bytes(self.data[start_byte : start_byte + DWORD], 
                               byteorder=sys.byteorder)
 
     @property

@@ -2,10 +2,7 @@ import sys
 
 # for more beautiful traceback
 from UI.utils import GLOBAL_CONSOLE
-
-LONGLONG = 8
-WORD = 2
-BYTE = 1
+from const import *
 
 class BootSector:
     # ------------------------
