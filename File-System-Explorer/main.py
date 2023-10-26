@@ -33,6 +33,6 @@ if __name__=="__main__":
 
     if NTFS.check_ntfs(drives[2]):
         ntfs = NTFS(drives[2])
-        console.print(ntfs.boot_sector)
+        # console.print(ntfs.boot_sector)
     else:
         exit()

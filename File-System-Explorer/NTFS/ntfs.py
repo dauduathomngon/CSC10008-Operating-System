@@ -39,12 +39,13 @@ class NTFS:
             data = self.boot_sector.f.read(self.boot_sector.MFT_entry_size)
 
             if data[:4] == b"FILE":
-                # Because entry 13->16 reserved for $Extend extension
+                # Because entry 13->16 reserved for $Extend extension so we skip it
                 if entry_count >= 13 and entry_count <= 16:
                     entry_count += 1
                     continue
 
                 entry = MFTEntry(data)
+                # we only need entry with flag 1 (file) and 3 (folder) because all of this entry are in use
                 if entry.flag == 0 or entry.flag == 2:
                     del entry
                 else:
@@ -55,8 +56,8 @@ class NTFS:
     @staticmethod
     def check_ntfs(vol_name: str) -> bool:
         with open(r'\\.\%s' % vol_name, "rb") as f:
-            name = f.read(512)[0x03 : 0x03 + 8].decode()
-            if name == "NTFS    ":
+            oem_name = f.read(512)[0x03 : 0x03 + LONGLONG].decode()
+            if oem_name == "NTFS    ":
                 return True
             else:
                 return False
