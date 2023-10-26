@@ -3,8 +3,15 @@ from ctypes import windll
 from typing import List
 from icecream import ic
 
-from UI.utils import GLOBAL_CONSOLE
 from NTFS.ntfs import NTFS
+
+# more beautiful traceback (apply globally)
+from rich.traceback import install
+install(show_locals=True, word_wrap=True)
+
+# more beautiful printing
+from rich.console import Console
+console = Console()
 
 def get_drives() -> List[str]:
         """
@@ -26,7 +33,6 @@ if __name__=="__main__":
 
     if NTFS.check_ntfs(drives[2]):
         ntfs = NTFS(drives[2])
-        GLOBAL_CONSOLE.print(ntfs.boot_sector)
-
+        console.print(ntfs.boot_sector)
     else:
         exit()

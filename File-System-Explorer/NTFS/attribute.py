@@ -30,8 +30,6 @@ class StandardInfo:
         self.data = data
         self.start_offset = start_offset
 
-        ic(start_offset)
-
         signature = int.from_bytes(self.data[start_offset:start_offset+4], byteorder=sys.byteorder)
         if signature != 0x10:
             raise Exception("Not Standard Info Attribute!")
@@ -85,20 +83,20 @@ class FileName:
                               byteorder= sys.byteorder) 
 
     @property 
-    def start_content_offset(self):
+    def start_offset_content(self):
         return self.start_offset + self.offset_to_content
     
     @property
     def parent_dir_id(self):
-        return int.from_bytes(self.data[self.start_content_offset: self.start_content_offset + 6])
+        return int.from_bytes(self.data[self.start_offset_content: self.start_offset_content + 6])
     
     @property
     def file_name_length(self):
-        return self.data[self.start_content_offset+64]
+        return self.data[self.start_offset_content+64]
     
     @property
     def file_name(self):
-        return  self.data[self.start_content_offset + 66 :self.start_content_offset + 66 + self.file_name_length * 2].decode('utf-16le')
+        return  self.data[self.start_offset_content + 66 :self.start_offset_content + 66 + self.file_name_length * 2].decode('utf-16le')
     
 class Data:
     def __init__(self, data, start_offset) -> None:

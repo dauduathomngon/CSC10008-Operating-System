@@ -1,11 +1,10 @@
+import sys
 from icecream import ic
 from typing import List
 
 from NTFS.boot_sector import BootSector
-from NTFS.mft_file import MFTFile
 from NTFS.mft_entry import MFTEntry
-# for more beautiful traceback
-from UI.utils import GLOBAL_CONSOLE
+from const import *
 
 class NTFS:
     def __init__(self, vol_name: str) -> None:
@@ -15,7 +14,20 @@ class NTFS:
         self.boot_sector = BootSector(self.name)
 
         # first $MFT file
-        self.mft_file = MFTFile(self.boot_sector)
+        mft_offset = self.boot_sector.cluster_MFT * self.boot_sector.cluster_size
+
+        self.boot_sector.f.seek(mft_offset)
+        data = self.boot_sector.f.read(self.boot_sector.MFT_entry_size)
+        self.mft_file = MFTEntry(data)
+
+        # find number sector of entire MFT table
+        # First VCN (virtual cluster number) is 0 and Number Last VCN at byte 24 (after $STANDARD_INFORMTION offset) 
+        # and has length LONGLONG
+        # So number of vcn = last_vcn + first_vcn + 1 (because start at 0)
+        # Then sector = no_vcn * sectors_per_clusterr
+        start_byte = self.mft_file.data_attr.start_offset + 24
+        n_vcn = int.from_bytes(data[start_byte : start_byte + LONGLONG], byteorder=sys.byteorder) + 1
+        n_sector = n_vcn * self.boot_sector.sectors_per_cluster
 
         # entry list
         self.entry_list: List[MFTEntry] = []
@@ -24,7 +36,7 @@ class NTFS:
         sector_per_entry = int(self.boot_sector.MFT_entry_size / self.boot_sector.bytes_per_sector)
         entry_count = 2
 
-        for _ in range(sector_per_entry, self.mft_file.num_sector_mft, sector_per_entry):
+        for _ in range(sector_per_entry, n_sector, sector_per_entry):
             data = self.boot_sector.f.read(self.boot_sector.MFT_entry_size)
 
             if data[:4] == b"FILE":
@@ -41,22 +53,11 @@ class NTFS:
 
                 entry_count += 1
 
-
     @staticmethod
     def check_ntfs(vol_name: str) -> bool:
-        try:
-            with open(r'\\.\%s' % vol_name, "rb") as f:
-                name = f.read(512)[0x03 : 0x03 + 8].decode()
-                if name == "NTFS    ":
-                    return True
-                else:
-                    return False
-        except FileNotFoundError:
-            GLOBAL_CONSOLE.print_exception(word_wrap=True)
-            exit()
-        except PermissionError:
-            GLOBAL_CONSOLE.print_exception(word_wrap=True)
-            exit()
-        except Exception:
-            GLOBAL_CONSOLE.print_exception(word_wrap=True)
-            exit()
+        with open(r'\\.\%s' % vol_name, "rb") as f:
+            name = f.read(512)[0x03 : 0x03 + 8].decode()
+            if name == "NTFS    ":
+                return True
+            else:
+                return False

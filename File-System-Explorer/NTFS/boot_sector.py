@@ -1,7 +1,6 @@
 import sys
 
 # for more beautiful traceback
-from UI.utils import GLOBAL_CONSOLE
 from const import *
 
 class BootSector:
@@ -23,19 +22,9 @@ class BootSector:
         # member variable
         self.name = vol_name
 
-        try:
-            self.f = open(r'\\.\%s' % self.name, "rb")
-            self.f.seek(0)
-            self.data = self.f.read(512)
-        except FileNotFoundError:
-            GLOBAL_CONSOLE.print_exception(word_wrap=True)
-            exit()
-        except PermissionError:
-            GLOBAL_CONSOLE.print_exception(word_wrap=True)
-            exit()
-        except Exception:
-            GLOBAL_CONSOLE.print_exception(word_wrap=True)
-            exit()
+        self.f = open(r'\\.\%s' % self.name, "rb")
+        self.f.seek(0)
+        self.data = self.f.read(512)
 
     @property
     def oem_name(self) -> str:
