@@ -1,4 +1,5 @@
 import sys
+
 class FAT:
     def __init__(self, data) -> None:
         self.entry_size = 4
@@ -15,6 +16,7 @@ class FAT:
             if index == 0x0FFFFFFF or index == 0x0FFFFFF7:
                 break
             return index_list 
+
 class FAT32:
     # Constructor - Format name example: "D:"
     def __init__(self, name:str) -> None:
