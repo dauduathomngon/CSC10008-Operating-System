@@ -36,7 +36,7 @@ class FAT32:
         # Read RDET
         self.DET={} # To archive DET of all folder in Root directory
         self.RDET= RDET(self.get_cluster_data(self.bootsector.start_cluster_RDET))
-        self.DET[self.bootsector.start_cluster_RDET] = RDET
+        self.DET[self.bootsector.start_cluster_RDET] =self.RDET
     
     
     
@@ -106,6 +106,7 @@ class FAT32:
             if path!="":
                 currentDET= self.visit_dir(path)
                 entry_list = currentDET.get_active_entries()
+                
             else:
                 entry_list= self.RDET.get_active_entries()
             ret = []
