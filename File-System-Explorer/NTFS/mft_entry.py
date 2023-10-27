@@ -12,11 +12,31 @@ class MFTEntry:
 
         # $STANDARD_INFORMATION Attribute
         offset_first_attr = int.from_bytes(self.data[0x14 : 0x14 + WORD], byteorder=sys.byteorder)
-        self.standard_info = StandardInfoAttrib(self.data, offset_first_attr)
+        self.standard_info = None
+
+        while self.standard_info is None:
+            try:
+                self.standard_info = StandardInfoAttrib(self.data, offset_first_attr)
+            except Exception:
+                # there is an attribute called $SECURITY_DESCRIPTOR (or more) between $FILE_NAME and $STANDARD_INFORMATION
+                len = int.from_bytes(self.data[offset_first_attr + 4 : offset_first_attr + 8],
+                                        byteorder=sys.byteorder)
+                offset_first_attr = offset_first_attr + len
+                self.standard_info = StandardInfoAttrib(self.data, offset_first_attr)
 
         # $FILE_NAME Attribute
         filename_offset = self.standard_info.start_offset + self.standard_info.length
-        self.name_attr = FileNameAttrib(self.data, filename_offset)
+        self.name_attr = None
+
+        while self.name_attr is None:
+            try:
+                self.name_attr = FileNameAttrib(self.data, filename_offset)
+            except Exception:
+                # there is an attribute called $ATTRIBUTE_LIST (or more) between $FILE_NAME and $STANDARD_INFORMATION
+                attr_list_len = int.from_bytes(self.data[filename_offset + 4 : filename_offset + 8],
+                                            byteorder=sys.byteorder)
+                filename_offset += attr_list_len
+                self.name_attr = FileNameAttrib(self.data, filename_offset)
 
         # directory specification
         self.is_dir = (self.flag == 3)
