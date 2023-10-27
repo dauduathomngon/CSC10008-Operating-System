@@ -6,10 +6,7 @@ from collections import defaultdict
 from NTFS.boot_sector import BootSector
 from NTFS.mft_entry import MFTEntry
 from const import *
-
-class DirTree:
-    def __init__(self, entry_list: List[MFTEntry]) -> None:
-        self.root = None
+from NTFS.directory_tree import DirTree
 
 class NTFS:
     def __init__(self, vol_name: str) -> None:
@@ -61,6 +58,10 @@ class NTFS:
         # create a directory tree
         self.dir_tree = DirTree(self.entry_list)
 
+
+
+        
+
     @staticmethod
     def check_ntfs(vol_name: str) -> bool:
         with open(r'\\.\%s' % vol_name, "rb") as f:
@@ -69,3 +70,6 @@ class NTFS:
                 return True
             else:
                 return False
+            
+    
+    
