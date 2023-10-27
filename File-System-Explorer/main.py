@@ -98,7 +98,6 @@ if __name__=="__main__":
     GLOBAL_CONSOLE.print(title)
 
     # print and choose volume
-    # print and choose volume
     drives = get_drives()
     GLOBAL_CONSOLE.print("Các volume hiện có: ")
     for idx, drive in enumerate(drives):
@@ -113,3 +112,6 @@ if __name__=="__main__":
         GLOBAL_CONSOLE.print(vol.boot_sector)
     else:
         vol = FAT32(choice)
+
+    # if NTFS.check_ntfs(drives[1]):
+    #     vol = NTFS(drives[1])
