@@ -30,6 +30,7 @@ class StandardInfoAttrib:
         self.data = data
         self.start_offset = start_offset
 
+        ic(self.data[start_offset : start_offset + 4])
         signature = int.from_bytes(self.data[start_offset : start_offset + 4],
                                    byteorder=sys.byteorder)
         if signature != 0x10:
@@ -75,6 +76,7 @@ class FileNameAttrib:
 
         signature = int.from_bytes(self.data[start_offset : start_offset + 4],
                                    byteorder=sys.byteorder)
+
         if signature != 0x30:
             raise Exception("Not File Name Attribute!")
 
