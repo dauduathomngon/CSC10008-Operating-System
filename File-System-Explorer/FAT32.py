@@ -115,3 +115,8 @@ class FAT32:
             self.FAT_size = self.boot_sector['Bytes Per Sector']*self.boot_sector['Sectors Per FAT']
             for _ in range(self.boot_sector['No. Copies of FAT']):
                 self.FAT_table.append(FAT(self.fd.read(self.FAT_size)))
+                
+    def show(self)-> None:
+        for key, value in self.boot_sector.items():
+            print(f"{key}: {value}")
+    
