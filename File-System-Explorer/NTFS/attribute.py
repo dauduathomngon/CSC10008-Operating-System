@@ -95,7 +95,8 @@ class FileNameAttrib:
     
     @property
     def parent_dir_id(self):
-        return int.from_bytes(self.data[self.start_offset_content : self.start_offset_content + 6])
+        return int.from_bytes(self.data[self.start_offset_content : self.start_offset_content + 6], 
+                              byteorder=sys.byteorder)
     
     @property
     def file_name_length(self):
