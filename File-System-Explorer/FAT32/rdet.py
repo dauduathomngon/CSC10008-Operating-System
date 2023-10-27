@@ -1,4 +1,4 @@
-from rdet_entry import RDET_Entry
+from FAT32.rdet_entry import RDET_Entry
 class RDET:
     def __init__(self,data) -> None:
         self.data=data

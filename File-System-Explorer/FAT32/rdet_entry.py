@@ -1,4 +1,4 @@
-from attribute import Attribute
+from FAT32.attribute import Attribute
 from datetime import datetime
 from itertools import chain
 import sys
