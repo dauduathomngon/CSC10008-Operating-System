@@ -1,12 +1,11 @@
 import sys
 from icecream import ic
 from typing import List
-from collections import defaultdict
 
 from NTFS.boot_sector import BootSector
 from NTFS.mft_entry import MFTEntry
-from const import *
 from NTFS.directory_tree import DirTree
+from const import *
 
 class NTFS:
     def __init__(self, vol_name: str) -> None:
@@ -57,10 +56,6 @@ class NTFS:
 
         # create a directory tree
         self.dir_tree = DirTree(self.entry_list)
-
-
-
-        
 
     @staticmethod
     def check_ntfs(vol_name: str) -> bool:
