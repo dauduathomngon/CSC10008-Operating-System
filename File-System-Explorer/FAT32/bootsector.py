@@ -103,17 +103,17 @@ class BootSector:
     def data_sector_start(self):
         return self.reserved_sectors+self.number_of_FAT_table*self.sectors_per_FAT
     
-    @staticmethod
-    def check_fat32(name: str):
-        try:
-            with open(r'\\.\%s' % name, 'rb') as fd:
-                fd.read(1)
-                fd.seek(0x52)
-                fat_name = fd.read(8)
-                if fat_name == b"FAT32   ":
-                    return True
-                return False
-        except Exception as e:
-            print(f"[ERROR] {e}")
-            exit()
+    # Show infomation     
+    def show(self):
+        print(f"Jump code: {self.jump_code}")
+        print(f"OEM_ID: {self.OEM_id}")
+        print(f"Bytes per sector: {self.bytes_per_sector}")
+        print(f"Reversed sector: {self.reserved_sectors}")
+        print(f"Number of FAT table: {self.number_of_FAT_table}")
+        print(f"Sectors per track: {self.sectors_per_track}")
+        print(f"Number of head: {self.number_of_head}")
+        print(f"Number of sector in volume: {self.number_sectors_in_volume}")
+        print(f"Sectors per FAT: {self.sectors_per_FAT}")
+        print(f"Sectors per cluster: {self.sectors_per_cluster}")
+    
            
