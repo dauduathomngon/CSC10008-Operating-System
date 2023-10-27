@@ -44,12 +44,18 @@ class NTFS:
                 if entry_count >= 13 and entry_count <= 16:
                     entry_count += 1
                     continue
+                    
+                try:
+                    entry = MFTEntry(data)
+                except Exception:
+                    continue
 
-                entry = MFTEntry(data)
                 # we only need entry with flag 1 (file) and 3 (folder) because all of this entry are in use
                 if entry.flag == 0 or entry.flag == 2:
                     del entry
                 else:
+                    ic(entry.name)
+                    ic(entry.id)
                     self.entry_list.append(entry)
 
                 entry_count += 1
