@@ -14,6 +14,7 @@ class BootSector:
     STARTING_CLUSTER_MFTMIRR = "Starting cluster of $MFTMirr"
     BYTES_PER_ENTRY = "Bytes Per Entry"
     SERIAL_NUMBER = "Serial Volume Number"
+    BYTES_PER_CLUSTER = "Bytes Per Cluster"
 
     def __init__(self, data) -> None:
         self.data = data
@@ -88,9 +89,9 @@ class BootSector:
             (BootSector.SERIAL_NUMBER, self.serial_number),
             (BootSector.TOTAL_SECTORS, self.total_sectors),
             (BootSector.RESERVED_SECTORS, self.reserved_sectors),
-            (BootSector.bytes_per_sector, self.bytes_per_sector),
-            (BootSector.sectors_per_cluster, self.sectors_per_cluster),
-            (BootSector.bytes_per_cluster, self.bytes_per_cluster),
+            (BootSector.BYTES_PER_SECTOR, self.bytes_per_sector),
+            (BootSector.SECTORS_PER_CLUSTER, self.sectors_per_cluster),
+            (BootSector.BYTES_PER_CLUSTER, self.bytes_per_cluster),
             (BootSector.STARTING_CLUSTER_MFT, self.starting_cluster_MFT),
             (BootSector.STARTING_CLUSTER_MFTMIRR, self.starting_cluster_MFTMirr),
             (BootSector.BYTES_PER_ENTRY, self.bytes_per_entry)
