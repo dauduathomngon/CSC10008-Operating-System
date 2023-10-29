@@ -13,7 +13,6 @@ from rich.prompt import Prompt
 from rich.panel import Panel
 
 from NTFS.ntfs import NTFS
-from FAT32.fat32 import FAT32
 
 # more beautiful traceback (apply globally)
 install(show_locals=True, word_wrap=True)
@@ -88,30 +87,29 @@ def get_drives() -> List[str]:
         return drives
 
 if __name__=="__main__":
-    # print all member
-    print_member()
+    # # print all member
+    # print_member()
 
-    # print title
-    title = Align.center(Panel.fit("Đồ án HĐH: [bold]File System Explorer :smile:", 
-                                    border_style="yellow", 
-                                    padding=(0,7)))
-    GLOBAL_CONSOLE.print(title)
+    # # print title
+    # title = Align.center(Panel.fit("Đồ án HĐH: [bold]File System Explorer :smile:", 
+    #                                 border_style="yellow", 
+    #                                 padding=(0,7)))
+    # GLOBAL_CONSOLE.print(title)
 
     # print and choose volume
     drives = get_drives()
-    GLOBAL_CONSOLE.print("Các volume hiện có: ")
-    for idx, drive in enumerate(drives):
-        GLOBAL_CONSOLE.print(f"{idx}) {drive}", style="cyan")
+    # GLOBAL_CONSOLE.print("Các volume hiện có: ")
+    # for idx, drive in enumerate(drives):
+    #     GLOBAL_CONSOLE.print(f"{idx}) {drive}", style="cyan")
+    # choice = Prompt.ask("Chọn volume mà bạn muốn :skull:", 
+    #                     choices=[str(i) for i in range(len(drives))],
+    #                     default="0") 
+
     choice = Prompt.ask("Chọn volume mà bạn muốn :skull:", 
-                        choices=[str(i) for i in range(len(drives))],
-                        default="0") 
+                        choices=drives,
+                        default=None) 
 
     # check drive
-    if NTFS.check_ntfs(drives[int(choice)]):
-        vol = NTFS(drives[int(choice)])
-        GLOBAL_CONSOLE.print(vol.boot_sector)
-    else:
-        vol = FAT32(choice)
-
-    # if NTFS.check_ntfs(drives[1]):
-    #     vol = NTFS(drives[1])
+    if NTFS.check_ntfs(choice):
+        vol = NTFS(choice)
+        vol.boot_sector_info()
