@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from typing import List
-from binascii import hexlify
 
 from NTFS.attribute import *
 

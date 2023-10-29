@@ -50,6 +50,11 @@ class Attribute:
         return int.from_bytes(data[offset : offset + 4],
                               byteorder="little")
 
+    @staticmethod
+    def get_length(offset, data):
+        return int.from_bytes(data[offset + 4 : offset + 8],
+                              byteorder="little")
+
 # ------------------------------------
 # $STANDARD_INFORMATION Attribute
 # ------------------------------------
@@ -70,7 +75,6 @@ class FileAttribute(Flag):
     NOT_INDEXED = 0x2000
     ENCRYPTED = 0x4000
 
-
 class StandardInfoAttrib(Attribute):
     def __init__(self, offset, data) -> None:
         super().__init__(offset, data)
@@ -88,11 +92,11 @@ class StandardInfoAttrib(Attribute):
 
     @property
     def last_modified_time(self):
-        return to_datetime(int.from_bytes(self.data[self.attrib_data_offset + 8 : self.attrib_data_offset + 12],
+        return to_datetime(int.from_bytes(self.data[self.attrib_data_offset + 8 : self.attrib_data_offset + 16],
                                           byteorder="little"))
     
     @property 
-    def file_permissions(self):
+    def file_status(self):
         return FileAttribute(int.from_bytes(self.data[self.attrib_data_offset + 32 : self.attrib_data_offset + 34],
                                             byteorder="little") & 0xFFFF)
 
