@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import Flag
 from NTFS.boot_sector import BootSector
 
+from icecream import ic
+
 # http://sunshine2k.blogspot.com/2014/08/where-does-116444736000000000-come-from.html
 TIME_OFFSET = 11644473600
 def to_datetime(timestamp):
@@ -30,7 +32,7 @@ class Attribute:
 
     @property
     def non_resident_flag(self):
-        return int.from_bytes(self.data[self.start_offset + 9 : self.start_offset + 10],
+        return int.from_bytes(self.data[self.start_offset + 8 : self.start_offset + 9],
                               byteorder="little")
 
     @property
@@ -152,9 +154,9 @@ class DataAttrib(Attribute):
             first_cluster_bytes = (size & 0b00001111)
 
             # then we have cluster count and first cluster
-            self.cluster_count = int.from_bytes(self.data[datarun_offset : datarun_offset + cluster_count_bytes],
+            self.cluster_count = int.from_bytes(self.data[datarun_offset + 1 : datarun_offset + 1 + cluster_count_bytes],
                                                 byteorder="little")
-            self.first_cluster = int.from_bytes(self.data[datarun_offset + cluster_count_bytes : datarun_offset + cluster_count_bytes + first_cluster_bytes],
+            self.first_cluster = int.from_bytes(self.data[datarun_offset + 1 + cluster_count_bytes : datarun_offset + 1 + cluster_count_bytes + first_cluster_bytes],
                                                 byteorder="little")
 
             # real size of data
