@@ -112,4 +112,4 @@ if __name__=="__main__":
     # check drive
     if NTFS.check_ntfs(choice):
         vol = NTFS(choice)
-        vol.boot_sector_info()
+        GLOBAL_CONSOLE.print(vol.boot_sector_info)
