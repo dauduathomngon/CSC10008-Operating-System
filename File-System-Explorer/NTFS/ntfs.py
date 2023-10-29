@@ -1,5 +1,9 @@
+import re
+import os
+
 from NTFS.boot_sector import BootSector
 from NTFS.mft_entry import MFTEntry
+from NTFS.directory_tree import DirTree
 
 from icecream import ic
 
@@ -45,16 +49,24 @@ class NTFS:
 
         for _ in range(sector_per_entry, no_sector, sector_per_entry):
             data = self.__f.read(self.__boot_sector.bytes_per_entry)
+            # we want to skip entry from 13 -> 16
             try:
-                # we wnat to skip entry from 13 -> 16
                 if entry_count >= 13 and entry_count <= 16:
                         entry_count += 1
                         continue
                 entry = MFTEntry(data)
+                ic(entry.name)
                 self.entry_list.append(entry)
                 entry_count += 1
             except:
-                pass
+                continue
+
+        # directory tree
+        self.dir_tree = DirTree(self.entry_list)
+
+        # use for cwd command
+        self.cwd = []
+        self.cwd.append(self.name)
 
     # ------------------------------------
     # Property
@@ -74,3 +86,89 @@ class NTFS:
                 return True
             else:
                 return False
+
+    def __parse_path(self, path: str):
+        return path.split(os.sep)
+
+    def access_dir(self, path):
+        path = self.__parse_path(path)
+        current_dir = None
+
+        #If path is in other directory
+        if path[0] == self.name:
+            current_dir = self.dir_tree.root
+            path.pop(0)
+        #If path is child of current directory
+        else:
+            current_dir = self.dir_tree.current_node
+
+        for dir in path:
+            if dir == "..":
+                current_dir = self.dir_tree.find_parent_entry(current_dir)
+            elif dir == ".":
+                continue
+
+            current_dir = current_dir.find_child_entry(dir)
+       
+            if current_dir is None:
+                raise Exception("Not found")
+            elif not current_dir.is_directory():
+                raise Exception("Not directory")
+            
+        return current_dir
+
+    def get_dir_info(self, path):
+        if path != "":
+            current_dir = self.access_dir(path)
+        else:
+            current_dir = self.dir_tree.current_node
+
+        list_active_childen = current_dir.get_active_children()
+
+        list_child_info = []
+
+        for child in list_active_childen:
+            info = {}
+            info["Flags"] = child.attributes[0x10].file_status
+            info["Name"] = child.name
+            info["Last Modified"] = child.attributes[0x10].last_modified_time
+
+            if child.is_directory():
+                info["Sector Offset"] = self.__boot_sector.starting_cluster_MFT * self.__boot_sector.sectors_per_cluster + child.id
+
+            if child.attributes[0x80].is_resident():
+                info["Sector Offset"] = self.__boot_sector.starting_cluster_MFT * self.__boot_sector.sectors_per_cluster + child.id
+            else:
+                info["Sector Offset"] = child.attributes[0x80].first_cluster * self.__boot_sector.sectors_per_cluster
+
+            list_child_info.append(info)
+
+        return list_child_info
+
+    def change_dir(self, path):
+        if path == "":
+            raise Exception("Path is required")
+        
+        #Access the path
+        current_dir = self.access_dir(path)
+
+        #Update the current node of the tree
+        self.dir_tree.current_node = current_dir
+        dirs = self.__parse_path(path)
+
+        #Update the cwd
+        if dirs[0] == self.name:
+            self.cwd.clear()
+            self.cwd.append(self.name)
+            dirs.pop(0)
+        for d in dirs:
+            if d == "..":
+                if len(self.cwd) > 1: 
+                    self.cwd.pop()
+            elif d != ".":
+                self.cwd.append(d)
+    
+    def get_cwd(self) -> str:
+        if len(self.cwd) == 1:
+            return self.cwd[0] + "\\"
+        return "\\".join(self.cwd)
