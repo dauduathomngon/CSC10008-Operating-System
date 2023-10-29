@@ -14,6 +14,8 @@ from rich.panel import Panel
 
 from NTFS.ntfs import NTFS
 
+from icecream import ic
+
 # more beautiful traceback (apply globally)
 install(show_locals=True, word_wrap=True)
 
@@ -61,14 +63,6 @@ def print_member():
 
         with beat(10):
             table.columns[1].header_style = "blue"
-
-        with beat(10):
-            table.caption = "From FIT HCMUS with love"
-
-        with beat(10):
-            table.caption = (
-                ":heart: From [b red not dim]FIT HCMUS with love :heart:"
-            )
 
 
 def get_drives() -> List[str]:
