@@ -28,31 +28,31 @@ class BootSector:
     def bytes_per_sector(self) -> int:
         # bytes_per_sector at offset 0x0B and has length WORD (2 bytes)
         return int.from_bytes(self.data[0x0B : 0x0B + WORD],
-                              byteorder=sys.byteorder)
+                              byteorder="little")
 
     @property
     def sectors_per_cluster(self) -> int:
         # sectors_per_cluster at offset 0x0D and has length BYTE
         return int.from_bytes(self.data[0x0D : 0x0D + BYTE],
-                              byteorder=sys.byteorder)
+                              byteorder="little")
 
     @property 
     def total_sectors(self) -> int:
         # total_sectors at offset 0x28 and has length LONGLONG
         return int.from_bytes(self.data[0x28 : 0x28 + LONGLONG],
-                              byteorder=sys.byteorder)
+                              byteorder="little")
 
     @property
     def starting_cluster_MFT(self) -> int:
         # starting_cluster_MFT at offset 0x30 and has length LONGLONG
         return int.from_bytes(self.data[0x30 : 0x30 + LONGLONG],
-                              byteorder=sys.byteorder)
+                              byteorder="little")
     
     @property
     def starting_cluster_MFTMirr(self) -> int:
         # starting_cluster_MFTMirr at offset 0x38 and has length LONGLONG
         return int.from_bytes(self.data[0x38 : 0x38 + LONGLONG],
-                              byteorder=sys.byteorder)
+                              byteorder="little")
     
     @property
     def bytes_per_cluster(self) -> int:
@@ -76,7 +76,7 @@ class BootSector:
     def reserved_sectors(self) -> int:
         # reserved_sectors at offset 0x0E and has length WORD
         return int.from_bytes(self.data[0x0E : 0x0E + WORD],
-                              byteorder=sys.byteorder)
+                              byteorder="little")
 
     @property
     def serial_number(self):
