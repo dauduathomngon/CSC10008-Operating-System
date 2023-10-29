@@ -1,9 +1,7 @@
-import re
-import os
-
 from NTFS.boot_sector import BootSector
 from NTFS.mft_entry import MFTEntry
 from NTFS.directory_tree import DirTree
+from utils import parse_path
 
 from icecream import ic
 
@@ -55,7 +53,6 @@ class NTFS:
                         entry_count += 1
                         continue
                 entry = MFTEntry(data)
-                ic(entry.name)
                 self.entry_list.append(entry)
                 entry_count += 1
             except:
@@ -87,11 +84,8 @@ class NTFS:
             else:
                 return False
 
-    def __parse_path(self, path: str):
-        return path.split(os.sep)
-
     def access_dir(self, path):
-        path = self.__parse_path(path)
+        path = parse_path(path)
         current_dir = None
 
         #If path is in other directory
@@ -154,7 +148,7 @@ class NTFS:
 
         #Update the current node of the tree
         self.dir_tree.current_node = current_dir
-        dirs = self.__parse_path(path)
+        dirs = parse_path(path)
 
         #Update the cwd
         if dirs[0] == self.name:
@@ -172,3 +166,29 @@ class NTFS:
         if len(self.cwd) == 1:
             return self.cwd[0] + "\\"
         return "\\".join(self.cwd)
+
+    def get_file_content(self, path:str):
+        path = parse_path(path)
+
+        if len(path) == 1:
+            entry = self.dir_tree.find_child_entry(path[0])
+        else:
+            dir = self.access_dir("\\".join(path[0:-1]))
+            entry = dir.find_child_entry(path[-1])
+
+        if entry is None:
+            raise Exception(f"File {path[-1]} does not exists")
+
+        if entry.is_directory():
+            raise Exception(f"{path[-1]} is not a file")
+
+        entry_data = entry.attributes[0x80]
+
+        if entry_data.is_resident():
+            return entry_data.content_data
+        else:
+            real_size = entry_data.real_size
+            first_cluster_bytes = entry_data.first_cluster * self.__boot_sector.bytes_per_cluster
+            cluster_count_bytes = entry_data.cluster_count * self.__boot_sector.bytes_per_cluster
+            self.__f.seek(first_cluster_bytes)
+            return self.__f.read(min(cluster_count_bytes, real_size))
