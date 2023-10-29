@@ -1,64 +1,65 @@
 import sys
-
-# for more beautiful traceback
-from const import *
+import binascii
+from const import LONGLONG, WORD, BYTE
 
 class BootSector:
-    # ------------------------
-    # Attributes
-    # ------------------------
-    OEM_NAME = "OEM name"
-    BYTES_PER_SECTOR = "Bytes per sector"
-    SECTORS_PER_CLUSTER = "Sectors per cluster"
-    CLUSTER_SIZE = "Cluster size"
-    RESERVED_SECTORS = "Reserved sectors"
-    TOTAL_SECTORS = "Total number of sector"
-    LCN_MFT = "MFT ($MFT) starting cluster"
-    LCN_MFT_MIRR = "MFT Backup ($MFTMirr) starting cluster"
-    MFT_ENTRY_SIZE = "MFT entry size"
-    SERIAL_NUMBER = "Serial volume number"
+    # Taken from: http://ntfs.com/ntfs-partition-boot-sector.htm
+    OEM_ID = "OEM ID"
+    BYTES_PER_SECTOR = "Bytes Per Sector"
+    SECTORS_PER_CLUSTER = "Sectors Per Cluster"
+    RESERVED_SECTORS = "Reserved Sectors"
+    TOTAL_SECTORS = "Total Sectors"
+    SECTORS_PER_CLUSTER = "Sector Per Cluster"
+    STARTING_CLUSTER_MFT = "Starting cluster of $MFT"
+    STARTING_CLUSTER_MFTMIRR = "Starting cluster of $MFTMirr"
+    BYTES_PER_ENTRY = "Bytes Per Entry"
+    SERIAL_NUMBER = "Serial Volume Number"
 
-    def __init__(self, vol_name: str) -> None:
-        # member variable
-        self.name = vol_name
-
-        self.f = open(r'\\.\%s' % self.name, "rb")
-        self.f.seek(0)
-        self.data = self.f.read(512)
+    def __init__(self, data) -> None:
+        self.data = data
 
     @property
-    def oem_name(self) -> str:
-        # oem_id at offset 0x03 with length LONGLONG (8 byte)
+    def oem_id(self) -> str:
+        # oem_id at offset 0x03 and has length LONGLONG (8 bytes)
         return self.data[0x03 : 0x03 + LONGLONG].decode()
 
     @property
     def bytes_per_sector(self) -> int:
-        # bytes_per_sector at offset 0x0B with length WORD (2 byte)
-        return int.from_bytes(self.data[0x0B : 0x0B + WORD], byteorder=sys.byteorder)
+        # bytes_per_sector at offset 0x0B and has length WORD (2 bytes)
+        return int.from_bytes(self.data[0x0B : 0x0B + WORD],
+                              byteorder=sys.byteorder)
 
     @property
     def sectors_per_cluster(self) -> int:
-        # sectors_per_cluster at offset 0x0D with length BYTE
-        return int.from_bytes(self.data[0x0D : 0x0D + BYTE], byteorder=sys.byteorder)
+        # sectors_per_cluster at offset 0x0D and has length BYTE
+        return int.from_bytes(self.data[0x0D : 0x0D + BYTE],
+                              byteorder=sys.byteorder)
 
-    @property
+    @property 
     def total_sectors(self) -> int:
-        # total_sectors at offset 0x28 with length LONGLONG
-        return int.from_bytes(self.data[0x28 : 0x28 + LONGLONG], byteorder=sys.byteorder)
+        # total_sectors at offset 0x28 and has length LONGLONG
+        return int.from_bytes(self.data[0x28 : 0x28 + LONGLONG],
+                              byteorder=sys.byteorder)
 
     @property
-    def cluster_MFT(self) -> int:
-        # cluster_MFT at offset 0x30 with length LONGLONG
-        return int.from_bytes(self.data[0x30 : 0x30 + LONGLONG], byteorder=sys.byteorder)
+    def starting_cluster_MFT(self) -> int:
+        # starting_cluster_MFT at offset 0x30 and has length LONGLONG
+        return int.from_bytes(self.data[0x30 : 0x30 + LONGLONG],
+                              byteorder=sys.byteorder)
+    
+    @property
+    def starting_cluster_MFTMirr(self) -> int:
+        # starting_cluster_MFTMirr at offset 0x38 and has length LONGLONG
+        return int.from_bytes(self.data[0x38 : 0x38 + LONGLONG],
+                              byteorder=sys.byteorder)
+    
+    @property
+    def bytes_per_cluster(self):
+        return self.bytes_per_sector * self.sectors_per_cluster
 
     @property
-    def cluster_MFF_mir(self) -> int:
-        # cluster_MFT_mir at offset 0x38 with length LONGLONG
-        return int.from_bytes(self.data[0x38 : 0x38 + LONGLONG], byteorder=sys.byteorder)
-
-    @property
-    def MFT_entry_size(self):
-        # Clusters Per File Record Segment at offset 0x40 with length DWORD (4 byte)
+    def bytes_per_entry(self) -> int:
+        # Clusters_Per_File_Record_Segment at offset 0x40 and has length DWORD (4 byte)
         # But we only need first byte (called segment)
         # segment can be:
         # - positive: it shows number of clusters per entry.
@@ -66,39 +67,36 @@ class BootSector:
         # (segment is negative because size of cluster > size of entry)
         segment = int.from_bytes(self.data[0x40 : 0x40 + BYTE], byteorder=sys.byteorder, signed=True)
         if segment > 0:
-            return segment * self.cluster_size
+            return segment * self.bytes_per_cluster
         else:
             return 2**abs(segment)
 
     @property
-    def cluster_size(self):
-        return self.bytes_per_sector * self.sectors_per_cluster
+    def reserved_sectors(self) -> int:
+        # reserved_sectors at offset 0x0E and has length WORD
+        return int.from_bytes(self.data[0x0E : 0x0E + WORD],
+                              byteorder=sys.byteorder)
 
     @property
-    def reserved_sectors(self):
-        # reserved_sectors at offset 0x0E with length WORD
-        return int.from_bytes(self.data[0x0E : 0x0E + WORD], byteorder=sys.byteorder)
-
-    @property
-    def serial_number(self):
-        # serial_number at offset 0x48 with length LONGLONG
-        return int.from_bytes(self.data[0x48 : 0x48 + LONGLONG], byteorder=sys.byteorder)
+    def serial_number(self) -> str:
+        # serial_number at offset 0x48 and has length LONGLONG
+        return str(binascii.hexlify(self.data[0x48 : 0x48 + LONGLONG]))
 
     def described(self):
-        return ( 
-            (BootSector.OEM_NAME, self.oem_name),
-            (BootSector.BYTES_PER_SECTOR, self.bytes_per_sector),
-            (BootSector.SECTORS_PER_CLUSTER, self.sectors_per_cluster),
-            (BootSector.CLUSTER_SIZE, self.cluster_size),
-            (BootSector.RESERVED_SECTORS, self.reserved_sectors),
+        return (
+            (BootSector.OEM_ID, self.oem_id),
+            (BootSector.SERIAL_NUMBER, self.serial_number),
             (BootSector.TOTAL_SECTORS, self.total_sectors),
-            (BootSector.LCN_MFT, self.cluster_MFT),
-            (BootSector.LCN_MFT_MIRR, self.cluster_MFF_mir),
-            (BootSector.MFT_ENTRY_SIZE, self.MFT_entry_size),
-            (BootSector.SERIAL_NUMBER, self.serial_number)
+            (BootSector.RESERVED_SECTORS, self.reserved_sectors),
+            (BootSector.bytes_per_sector, self.bytes_per_sector),
+            (BootSector.sectors_per_cluster, self.sectors_per_cluster),
+            (BootSector.bytes_per_cluster, self.bytes_per_cluster),
+            (BootSector.STARTING_CLUSTER_MFT, self.starting_cluster_MFT),
+            (BootSector.STARTING_CLUSTER_MFTMIRR, self.starting_cluster_MFTMirr),
+            (BootSector.BYTES_PER_ENTRY, self.bytes_per_entry)
         )
 
-    def __str__(self) -> str:
+    def __str__(self):
         s = "Volume name: " + self.name[0]
         s += "\nVolume Information:\n"
         for name, value in self.described():
