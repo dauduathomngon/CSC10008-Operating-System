@@ -1,13 +1,6 @@
-from datetime import datetime
 from enum import Flag
 from NTFS.boot_sector import BootSector
-
-from icecream import ic
-
-# http://sunshine2k.blogspot.com/2014/08/where-does-116444736000000000-come-from.html
-TIME_OFFSET = 11644473600
-def to_datetime(timestamp):
-  return datetime.fromtimestamp((timestamp - TIME_OFFSET * 1e7) // 1e7)
+from utils import to_datetime
 
 # ------------------------------------
 # Generic Attribute
