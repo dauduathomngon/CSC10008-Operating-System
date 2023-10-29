@@ -55,7 +55,7 @@ class BootSector:
                               byteorder=sys.byteorder)
     
     @property
-    def bytes_per_cluster(self):
+    def bytes_per_cluster(self) -> int:
         return self.bytes_per_sector * self.sectors_per_cluster
 
     @property
@@ -79,9 +79,9 @@ class BootSector:
                               byteorder=sys.byteorder)
 
     @property
-    def serial_number(self) -> str:
+    def serial_number(self):
         # serial_number at offset 0x48 and has length LONGLONG
-        return str(binascii.hexlify(self.data[0x48 : 0x48 + LONGLONG]))
+        return binascii.hexlify(self.data[0x48 : 0x48 + LONGLONG]).decode("utf-8").upper()
 
     def described(self):
         return (
@@ -98,8 +98,7 @@ class BootSector:
         )
 
     def __str__(self):
-        s = "Volume name: " + self.name[0]
-        s += "\nVolume Information:\n"
+        s = "\nVolume Information from Boot Sector:\n"
         for name, value in self.described():
             s += f"\t{name}: {value}\n"
         return s
