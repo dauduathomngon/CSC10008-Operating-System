@@ -31,4 +31,3 @@ if __name__=="__main__":
     if NTFS.check_ntfs(choice_vol):
         vol = NTFS(choice_vol)
         GLOBAL_CONSOLE.print(vol.boot_sector_info)
-        GLOBAL_CONSOLE.print(vol.get_file_content("F:\PDF\Windows-NT-File-System-Internals.pdf"))
