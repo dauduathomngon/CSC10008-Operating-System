@@ -147,7 +147,6 @@ class FAT32:
             print(f"[ERROR] {e}")
             exit()    
     
-    
     def __del__(self):
         if getattr(self, "fd", None):
             print("Closing Volume...")

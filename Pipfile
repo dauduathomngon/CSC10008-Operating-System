@@ -4,6 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+rich = "*"
+click = "*"
+textual = "*"
+pytest = "*"
+icecream = "*"
 
 [dev-packages]
 
