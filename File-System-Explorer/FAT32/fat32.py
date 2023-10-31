@@ -147,6 +147,48 @@ class FAT32:
             print(f"[ERROR] {e}")
             exit()    
     
+    # Read text file
+    def read_text_file(self,path):
+        path= self.parse_pat(path)
+        
+         # ../abc/text.txt
+        if len(path)>1:
+            name= path[-1]
+            path = "\\".join(path[:-1])
+            currentDet = self.visit_dir(path)
+            entry = currentDet.find_entry(name)
+        else:
+            # text.txt
+            entry = self.RDET.find_entry(path[0])
+        
+        if entry is None:
+            raise Exception("File doesn't exist")
+        if entry.is_directory():
+            raise Exception("Is a directory")
+        
+        # Get data cluster list from FAT table
+        index_list = self.FAT_table[0].get_chain(entry.start_cluster)
+        data=""
+        size_left = entry.size
+        for i in index_list:
+            if size_left<=0:
+                break
+            # Get sector offset
+            offset = self.cluster_to_sector(i)
+            # Seek offset (byte)
+            self.fd.seek(offset*self.bootsector.bytes_per_sector)
+            # Read 1 data cluster. If left data < cluster size then read size left
+            raw_data=self.fd.read(min(self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector, size_left))
+            size_left -= self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector   
+            try:
+                data+= raw_data.decode()
+            except UnicodeDecodeError as e:
+                raise Exception("Not a text file, please use appropriate software to open.")
+            except Exception as e:
+                raise(e)
+        return data
+            
+    
     def __del__(self):
         if getattr(self, "fd", None):
             print("Closing Volume...")
