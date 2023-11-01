@@ -149,7 +149,7 @@ class FAT32:
     
     # Read text file
     def read_text_file(self,path):
-        path= self.parse_pat(path)
+        path= self.parse_path(path)
         
          # ../abc/text.txt
         if len(path)>1:
