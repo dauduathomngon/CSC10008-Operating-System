@@ -68,7 +68,7 @@ class FAT32:
         return data
           
     # Visit dir
-    def visit_dir(self,path)-> RDET:
+    def access_dir(self,path)-> RDET:
         if path=="":
             raise Exception("Directory name is required!")
         dirs = self.parse_path(path)
@@ -101,10 +101,10 @@ class FAT32:
         return currentDET
                 
     # Get directory
-    def get_dir(self, path):
+    def get_dir_info(self, path):
         try:
             if path!="":
-                currentDET= self.visit_dir(path)
+                currentDET= self.access_dir(path)
                 entry_list = currentDET.get_active_entries()
                 
             else:
@@ -129,7 +129,7 @@ class FAT32:
     def change_dir(self, path=""):
         if path == "":
             raise Exception("Path to directory is required!")
-        currentDET = self.visit_dir(path)
+        currentDET = self.access_dir(path)
         self.RDET = currentDET    
             
     # Check FAT32         
@@ -148,14 +148,14 @@ class FAT32:
             exit()    
     
     # Read text file
-    def read_text_file(self,path):
-        path= self.parse_pat(path)
+    def get_text_file(self,path):
+        path= self.parse_path(path)
         
          # ../abc/text.txt
         if len(path)>1:
             name= path[-1]
             path = "\\".join(path[:-1])
-            currentDet = self.visit_dir(path)
+            currentDet = self.access_dir(path)
             entry = currentDet.find_entry(name)
         else:
             # text.txt
@@ -178,14 +178,17 @@ class FAT32:
             # Seek offset (byte)
             self.fd.seek(offset*self.bootsector.bytes_per_sector)
             # Read 1 data cluster. If left data < cluster size then read size left
-            raw_data=self.fd.read(min(self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector, size_left))
+            raw_data = self.fd.read(min(self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector, size_left))
+
             size_left -= self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector   
+
             try:
                 data+= raw_data.decode()
             except UnicodeDecodeError as e:
                 raise Exception("Not a text file, please use appropriate software to open.")
             except Exception as e:
                 raise(e)
+
         return data
             
     
