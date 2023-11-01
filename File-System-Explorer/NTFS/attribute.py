@@ -2,6 +2,8 @@ from enum import Flag
 from NTFS.boot_sector import BootSector
 from utils import to_datetime
 
+from icecream import ic
+
 # ------------------------------------
 # Generic Attribute
 # ------------------------------------
@@ -132,6 +134,8 @@ class DataAttrib(Attribute):
             raise Exception("This is not $DATA attribute")
 
         if self.is_resident():
+            # data_len = int.from_bytes(self.data[self.start_offset + 16 : self.start_offset + 20],
+            #                           byteorder="little")
             data_len = int.from_bytes(self.data[self.attrib_data_offset + 16 : self.attrib_data_offset + 20],
                                       byteorder="little")
             self.content_data = self.data[self.attrib_data_offset : self.attrib_data_offset + data_len]
@@ -141,15 +145,16 @@ class DataAttrib(Attribute):
                                                                 byteorder="little")
             size = self.data[datarun_offset]
 
-            # first 4 bit of datarun_size defined how much bytes cluster count has
-            cluster_count_bytes = (size & 0b1111000) >> 4
-            # last 4 bits defined how much bytes first cluster of data run has
-            first_cluster_bytes = (size & 0b00001111)
+            # first 4 bits defined how much bytes first cluster of data run has
+            first_cluster_bits = (size & 0b1111000) >> 4
+            # last 4 bit of datarun_size defined how much bytes cluster count has
+            cluster_count_bits = (size & 0b00001111)
 
             # then we have cluster count and first cluster
-            self.cluster_count = int.from_bytes(self.data[datarun_offset + 1 : datarun_offset + 1 + cluster_count_bytes],
+            self.cluster_count = int.from_bytes(self.data[datarun_offset + 1 : datarun_offset + 1 + cluster_count_bits],
                                                 byteorder="little")
-            self.first_cluster = int.from_bytes(self.data[datarun_offset + 1 + cluster_count_bytes : datarun_offset + 1 + cluster_count_bytes + first_cluster_bytes],
+
+            self.first_cluster = int.from_bytes(self.data[datarun_offset + 1 + cluster_count_bits : datarun_offset + 1 + cluster_count_bits + first_cluster_bits],
                                                 byteorder="little")
 
             # real size of data
