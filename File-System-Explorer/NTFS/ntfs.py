@@ -167,7 +167,7 @@ class NTFS:
             return self.cwd[0] + "\\"
         return "\\".join(self.cwd)
 
-    def get_file_content(self, path:str):
+    def get_text_file(self, path: str):
         path = parse_path(path)
 
         if len(path) == 1:
@@ -185,10 +185,31 @@ class NTFS:
         entry_data = entry.attributes[0x80]
 
         if entry_data.is_resident():
-            return entry_data.content_data
+            try:
+                data = entry_data.content_data.decode()
+            except UnicodeDecodeError as e:
+                raise Exception("Not a .txt file.")
+            return data
         else:
+            data = ""
+
             real_size = entry_data.real_size
+
             first_cluster_bytes = entry_data.first_cluster * self.__boot_sector.bytes_per_cluster
-            cluster_count_bytes = entry_data.cluster_count * self.__boot_sector.bytes_per_cluster
+
             self.__f.seek(first_cluster_bytes)
-            return self.__f.read(min(cluster_count_bytes, real_size))
+
+            for _ in range(0, entry_data.cluster_count):
+                if real_size <= 0:
+                    break
+
+                raw_data = self.__f.read(min(self.__boot_sector.bytes_per_cluster, real_size))
+
+                real_size -= self.__boot_sector.bytes_per_cluster
+
+                try:
+                    data += raw_data.decode()
+                except UnicodeDecodeError as e:
+                    raise Exception("Not a .txt file")
+
+            return data
