@@ -6,9 +6,9 @@ class RDET_Entry:
     def __init__(self,data) -> None:
         self.data= data
         self.flag = data[0xB:0xC]
+        self.is_subentry: bool = False
         if self.flag == b'\x0f':
             self.is_subentry = True
-        self.is_subentry: bool = False
         self.is_deleted: bool = False
         self.is_empty: bool = False
         self.is_label: bool = False
