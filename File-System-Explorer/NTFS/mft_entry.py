@@ -105,7 +105,7 @@ class MFTEntry:
         if 0x10 not in self.attributes:
             raise Exception("There is no $STANDARD_INFORMATION attribute")
         
-        if FileAttribute.SYSTEM in self.attributes[0x10].file_status or FileAttribute.HIDDEN in self.attributes[0x10].file_status:
+        if NTFSAttribute.SYSTEM in self.attributes[0x10].file_status or NTFSAttribute.HIDDEN in self.attributes[0x10].file_status:
             return False
         
         return True
