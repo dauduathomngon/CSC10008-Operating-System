@@ -142,10 +142,11 @@ class Shell(Cmd):
             ):
                 return
             
-        tab = self.BRANCH + tab + self.SPACE
+        tab = self.BRANCH + tab[1:] + self.SPACE
 
         # get all entry of a folder
-        entry_list = self.vol.get_dir_info(self.vol.get_cwd() + entry["Name"])
+        self.vol.change_dir(entry["Name"])
+        entry_list = self.vol.get_dir_info("")
 
         size = len(entry_list)
         for i in range(0, size):
@@ -153,6 +154,9 @@ class Shell(Cmd):
             if entry_list[i]["Name"] in (".", ".."):
                 continue
             self.__print_tree(entry_list[i], tab, i == size - 1)
+
+        # get all entry of a folder
+        self.vol.change_dir("..")
 
     def do_tree(self, arg):
         entry_list = self.vol.get_dir_info(arg)
