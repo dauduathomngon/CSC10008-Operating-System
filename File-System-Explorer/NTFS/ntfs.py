@@ -109,8 +109,8 @@ class NTFS:
                 dir = current_dir.name
             elif dir == ".":
                 continue
-
-            current_dir = current_dir.find_child_entry(dir)
+            else:
+                current_dir = current_dir.find_child_entry(dir)
        
             if current_dir is None:
                 raise Exception("Not found")
