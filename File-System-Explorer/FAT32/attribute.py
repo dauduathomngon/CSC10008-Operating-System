@@ -1,5 +1,5 @@
 from enum import Flag, auto
-class Attribute(Flag):
+class FAT32Attribute(Flag):
     READ_ONLY = auto()
     HIDDEN = auto()
     SYSTEM = auto()
