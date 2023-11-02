@@ -1,7 +1,6 @@
 import os
 from cmd import Cmd
 from datetime import datetime
-from icecream import ic
 
 from NTFS.ntfs import NTFS
 from FAT32.fat32 import FAT32

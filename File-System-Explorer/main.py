@@ -1,9 +1,13 @@
 import os
 from rich.traceback import install
 from rich.prompt import Prompt
-from icecream import ic
 
-from utils import (get_drives, GLOBAL_CONSOLE, print_greeting)
+from utils import (
+    get_drives,
+    GLOBAL_CONSOLE,
+    print_greeting,
+    print_member,
+    print_label)
 from NTFS.ntfs import NTFS
 from FAT32.fat32 import FAT32
 from shell import Shell
@@ -12,6 +16,9 @@ from shell import Shell
 install(show_locals=True, word_wrap=True)
 
 if __name__=="__main__":
+    print_member()
+    print_label()
+
     # print and choose volume
     drives = get_drives()
 

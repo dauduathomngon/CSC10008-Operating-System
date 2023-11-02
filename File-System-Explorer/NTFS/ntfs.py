@@ -4,8 +4,6 @@ from NTFS.directory_tree import DirTree
 from utils import parse_path
 from NTFS.attribute import NTFSAttribute
 
-from icecream import ic
-
 # ------------------------------------
 # NTFS
 # ------------------------------------
