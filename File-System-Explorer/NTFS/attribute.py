@@ -55,7 +55,7 @@ class Attribute:
 # ------------------------------------
 # $STANDARD_INFORMATION Attribute
 # ------------------------------------
-class FileAttribute(Flag):
+class NTFSAttribute(Flag):
     # taken from: https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants?redirectedfrom=MSDN
     READ_ONLY = 0x1
     HIDDEN = 0x2
@@ -94,7 +94,7 @@ class StandardInfoAttrib(Attribute):
     
     @property 
     def file_status(self):
-        return FileAttribute(int.from_bytes(self.data[self.attrib_data_offset + 32 : self.attrib_data_offset + 34],
+        return NTFSAttribute(int.from_bytes(self.data[self.attrib_data_offset + 32 : self.attrib_data_offset + 34],
                                             byteorder="little") & 0xFFFF)
 
 # ------------------------------------
@@ -134,11 +134,9 @@ class DataAttrib(Attribute):
             raise Exception("This is not $DATA attribute")
 
         if self.is_resident():
-            # data_len = int.from_bytes(self.data[self.start_offset + 16 : self.start_offset + 20],
-            #                           byteorder="little")
-            data_len = int.from_bytes(self.data[self.attrib_data_offset + 16 : self.attrib_data_offset + 20],
+            self.data_len = int.from_bytes(self.data[self.start_offset + 16 : self.start_offset + 20],
                                       byteorder="little")
-            self.content_data = self.data[self.attrib_data_offset : self.attrib_data_offset + data_len]
+            self.content_data = self.data[self.attrib_data_offset : self.attrib_data_offset + self.data_len]
 
         else:
             datarun_offset = self.start_offset + int.from_bytes(self.data[self.start_offset + 32 : self.start_offset + 34],
