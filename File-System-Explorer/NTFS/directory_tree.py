@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List
+from icecream import ic
 
 from NTFS.mft_entry import MFTEntry
 
@@ -34,7 +34,7 @@ class DirTree:
     # Method
     # ------------------------------------
     def find_child_entry(self, name):
-        self.current_node.find_child_entry(name)
+        return self.current_node.find_child_entry(name)
 
     def find_parent_entry(self, entry):
         return self.dict_node[entry.parent_id]
