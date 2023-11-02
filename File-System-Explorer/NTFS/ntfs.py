@@ -2,6 +2,7 @@ from NTFS.boot_sector import BootSector
 from NTFS.mft_entry import MFTEntry
 from NTFS.directory_tree import DirTree
 from utils import parse_path
+from NTFS.attribute import NTFSAttribute
 
 from icecream import ic
 
@@ -13,7 +14,12 @@ class NTFS:
         self.name = vol_name
 
         # use to read data
-        self.__f = open(r'\\.\%s' % self.name, "rb")
+        self.__f = None
+        try:
+            self.__f = open(r'\\.\%s' % self.name, "rb")
+        except PermissionError:
+            raise PermissionError
+        
         self.__f.seek(0)
 
         # first read boot sector
@@ -77,12 +83,15 @@ class NTFS:
     # ------------------------------------
     @staticmethod
     def check_ntfs(vol_name) -> bool:
-        with open(r'\\.\%s' % vol_name, "rb") as f:
-            oem_name = f.read(512)[0x03 : 0x03 + 8].decode()
-            if oem_name == "NTFS    ":
-                return True
-            else:
-                return False
+        try:
+            with open(r'\\.\%s' % vol_name, "rb") as f:
+                oem_name = f.read(512)[0x03 : 0x03 + 8].decode()
+                if oem_name == "NTFS    ":
+                    return True
+                else:
+                    return False
+        except PermissionError:
+            raise PermissionError
 
     def access_dir(self, path):
         path = parse_path(path)
@@ -99,6 +108,7 @@ class NTFS:
         for dir in path:
             if dir == "..":
                 current_dir = self.dir_tree.find_parent_entry(current_dir)
+                dir = current_dir.name
             elif dir == ".":
                 continue
 
@@ -123,20 +133,22 @@ class NTFS:
 
         for child in list_active_childen:
             info = {}
-            info["Flags"] = child.attributes[0x10].file_status
             info["Name"] = child.name
             info["Last Modified"] = child.attributes[0x10].last_modified_time
-
             if child.is_directory():
+                info["Flags"] = NTFSAttribute.DIRECTORY
                 info["Sector Offset"] = self.__boot_sector.starting_cluster_MFT * self.__boot_sector.sectors_per_cluster + child.id
-
-            if child.attributes[0x80].is_resident():
-                info["Sector Offset"] = self.__boot_sector.starting_cluster_MFT * self.__boot_sector.sectors_per_cluster + child.id
+                info["Size"] = 0
             else:
-                info["Sector Offset"] = child.attributes[0x80].first_cluster * self.__boot_sector.sectors_per_cluster
-
+                info["Flags"] = child.attributes[0x10].file_status
+                if child.attributes[0x80].is_resident():
+                    info["Sector Offset"] = self.__boot_sector.starting_cluster_MFT * self.__boot_sector.sectors_per_cluster + child.id
+                    info["Size"] = child.attributes[0x80].data_len
+                else:
+                    info["Sector Offset"] = child.attributes[0x80].first_cluster * self.__boot_sector.sectors_per_cluster
+                    info["Size"] = child.attributes[0x80].real_size
             list_child_info.append(info)
-
+        
         return list_child_info
 
     def change_dir(self, path):
@@ -178,7 +190,6 @@ class NTFS:
 
         if entry is None:
             raise Exception(f"File {path[-1]} does not exists")
-
         if entry.is_directory():
             raise Exception(f"{path[-1]} is not a file")
 
@@ -213,3 +224,10 @@ class NTFS:
                     raise Exception("Not a .txt file")
 
             return data
+
+    def __del__(self):
+        if getattr(self, "__f", None):
+            self.__f.close()
+
+    def __str__(self):
+        return "NTFS"
