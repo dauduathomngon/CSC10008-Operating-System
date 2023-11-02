@@ -114,6 +114,7 @@ class BootSector:
             ("Sectors per track", self.sectors_per_track),
             ("Number of head", self.number_of_head),
             ("Number of sector in volume", self.number_sectors_in_volume),
+            ("Start cluster of RDET", self.start_cluster_RDET),
             ("Sectors per FAT", self.sectors_per_FAT),
             ("Sectors per cluster", self.sectors_per_cluster)
         )
