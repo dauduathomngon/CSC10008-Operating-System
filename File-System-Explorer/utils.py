@@ -68,11 +68,11 @@ def beat(length: int = 1) -> None:
 
 def print_member():
     member = [
-        ["Đặng An Nguyên", "21120123"],
-        ["Phan Nguyên Phương", "21120123"],
-        ["Đỗ Hoàng Long", "21120123"],
-        ["Nguyễn Anh Tú", "21120123"],
-        ["Lê Nguyễn", "21120123"]
+        ["Đặng An Nguyên", "21120508"],
+        ["Phan Nguyên Phương", "21120312"],
+        ["Đỗ Hoàng Long", "21120498"],
+        ["Nguyễn Anh Tú", "21120355"],
+        ["Lê Nguyễn", "21120511"]
     ]
 
     table = Table(show_footer=False)
