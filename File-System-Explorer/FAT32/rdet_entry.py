@@ -1,7 +1,8 @@
-from FAT32.attribute import Attribute
+from FAT32.attribute import FAT32Attribute
 from datetime import datetime
 from itertools import chain
 import sys
+
 class RDET_Entry:
     def __init__(self,data) -> None:
         self.data= data
@@ -12,7 +13,7 @@ class RDET_Entry:
         self.is_deleted: bool = False
         self.is_empty: bool = False
         self.is_label: bool = False
-        self.attr = Attribute(0)
+        self.attr = FAT32Attribute(0)
         self.date_created = ""
         self.size = 0
         self.date_created = 0
@@ -32,8 +33,8 @@ class RDET_Entry:
                 return
             
             
-            self.attr = Attribute(int.from_bytes(self.flag,byteorder=sys.byteorder))    
-            if Attribute.VOLLABLE in self.attr:
+            self.attr = FAT32Attribute(int.from_bytes(self.flag,byteorder=sys.byteorder))    
+            if FAT32Attribute.VOLLABLE in self.attr:
                 self.is_label = True
                 return
 
@@ -84,10 +85,10 @@ class RDET_Entry:
             
 
     def is_active_entry(self) -> bool:
-        return not (self.is_empty or self.is_subentry or self.is_deleted or self.is_label or Attribute.SYSTEM in self.attr)
+        return not (self.is_empty or self.is_subentry or self.is_deleted or self.is_label or FAT32Attribute.SYSTEM in self.attr)
   
     def is_directory(self) -> bool:
-        return Attribute.DIRECTORY in self.attr
+        return FAT32Attribute.DIRECTORY in self.attr
 
     def is_archive(self) -> bool:
-        return Attribute.ARCHIVE in self.attr
+        return FAT32Attribute.ARCHIVE in self.attr

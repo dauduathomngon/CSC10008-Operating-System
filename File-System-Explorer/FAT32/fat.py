@@ -1,4 +1,5 @@
 import sys
+
 class FAT:
     def __init__(self, data) -> None:
         self.elements=[]

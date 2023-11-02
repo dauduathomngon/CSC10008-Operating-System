@@ -1,19 +1,17 @@
+import os
 from rich.traceback import install
 from rich.prompt import Prompt
+from icecream import ic
 
+from utils import (get_drives, GLOBAL_CONSOLE, print_greeting)
 from NTFS.ntfs import NTFS
-from utils import (get_drives, GLOBAL_CONSOLE, print_member, print_label)
+from FAT32.fat32 import FAT32
+from shell import Shell
 
 # more beautiful traceback (apply globally)
 install(show_locals=True, word_wrap=True)
 
 if __name__=="__main__":
-    # # print all member
-    print_member()
-
-    # # print title
-    print_label()
-
     # print and choose volume
     drives = get_drives()
 
@@ -28,6 +26,17 @@ if __name__=="__main__":
 
     # check drive
     choice_vol = drives[int(choice)]
-    if NTFS.check_ntfs(choice_vol):
-        vol = NTFS(choice_vol)
-        GLOBAL_CONSOLE.print(vol.boot_sector_info)
+
+    os.system("cls")
+    
+    # run shell
+    try:
+        if NTFS.check_ntfs(choice_vol):
+            print_greeting()
+            shell = Shell(NTFS(choice_vol))
+        else:
+            print_greeting()
+            shell = Shell(FAT32(choice_vol))
+        shell.cmdloop()
+    except PermissionError:
+        GLOBAL_CONSOLE.print(f"Không thể truy cập được volume [bold red]{choice_vol}[/bold red] cần mở dưới [bold]quyền admin[/bold].")

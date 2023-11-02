@@ -6,7 +6,7 @@ class BootSector:
     @property
     # Jump Boot code: Offset 0 size 3
     def jump_code(self):
-        return self.boot_sector_raw[:3]
+        return int.from_bytes(self.boot_sector_raw[:3], byteorder="little")
     
     @property
     # OEM Name: offset 3 size 8
@@ -104,16 +104,22 @@ class BootSector:
         return self.reserved_sectors+self.number_of_FAT_table*self.sectors_per_FAT
     
     # Show infomation     
-    def show(self):
-        print(f"Jump code: {self.jump_code}")
-        print(f"OEM_ID: {self.OEM_id}")
-        print(f"Bytes per sector: {self.bytes_per_sector}")
-        print(f"Reversed sector: {self.reserved_sectors}")
-        print(f"Number of FAT table: {self.number_of_FAT_table}")
-        print(f"Sectors per track: {self.sectors_per_track}")
-        print(f"Number of head: {self.number_of_head}")
-        print(f"Number of sector in volume: {self.number_sectors_in_volume}")
-        print(f"Sectors per FAT: {self.sectors_per_FAT}")
-        print(f"Sectors per cluster: {self.sectors_per_cluster}")
-    
-           
+    def described(self):
+        return (
+            ("Jump code", self.jump_code),
+            ("OEM_ID", self.OEM_id),
+            ("Bytes per sector", self.bytes_per_sector),
+            ("Reversed sector", self.reserved_sectors),
+            ("Number of FAT table", self.number_of_FAT_table),
+            ("Sectors per track", self.sectors_per_track),
+            ("Number of head", self.number_of_head),
+            ("Number of sector in volume", self.number_sectors_in_volume),
+            ("Sectors per FAT", self.sectors_per_FAT),
+            ("Sectors per cluster", self.sectors_per_cluster)
+        )
+
+    def __str__(self):
+        s = "\nVolume Information from Boot Sector:\n"
+        for name, value in self.described():
+            s += f"\t{name}: {value}\n"
+        return s
