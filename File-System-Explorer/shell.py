@@ -22,7 +22,7 @@ class Shell(Cmd):
 
     def __update_prompt(self): # DONE
         time_now = datetime.now()
-        Shell.prompt = f"({time_now.hour}h:{time_now.minute}m) Cậu đang ở [{self.vol.get_cwd()}] > "
+        Shell.prompt = f"({time_now.hour}:{time_now.minute}) Cậu đang ở [{self.vol.get_cwd()}] > "
 
     def do_clear(self, arg): # DONE
         os.system("cls")
@@ -43,8 +43,8 @@ class Shell(Cmd):
         try:
             list_entry = self.vol.get_dir_info(arg)
 
-            GLOBAL_CONSOLE.print(f"[green]{'Mode':<10}  {'LastModifiedTime':<20}  {'Length':>12}  {'Name'}")
-            GLOBAL_CONSOLE.print(f"[green]{'────':<10}  {'─────────────':<20}  {'──────':>12}  {'────'}")
+            GLOBAL_CONSOLE.print(f"[green]{'Mode':<10}  {'Last Modified Time':<20}  {'Length':>12}  {'Name'}")
+            GLOBAL_CONSOLE.print(f"[green]{'────':<10}  {'──────────────────':<20}  {'──────':>12}  {'────'}")
 
             for entry in list_entry:
                 flag = entry["Flags"]
@@ -117,5 +117,52 @@ class Shell(Cmd):
                 GLOBAL_CONSOLE.print(f"Nhưng cậu có thể dùng [green]{get_default_windows_app(ext)}[/green] để mở")
                 GLOBAL_CONSOLE.print("Hoặc app nào khác tuỳ cậu 😎")
 
+    def do_type(self, arg):
+        GLOBAL_CONSOLE.print(self.vol)
+
+    SPACE = '    '
+    BRANCH = '│'
+    MIDDLE = '├── '
+    LAST = '└── '
+
+    def __print_tree(self, entry, tab, is_last=False):
+        if (str(self.vol) == "NTFS" and
+            entry["Flags"] & NTFSAttribute.DIRECTORY) or (
+                str(self.vol) == "FAT32" and
+                entry["Flags"] & FAT32Attribute.DIRECTORY
+            ):
+            GLOBAL_CONSOLE.print(tab + (self.LAST if is_last else self.MIDDLE) + f'📂 [cyan]{entry["Name"]}\\')
+        else:
+            GLOBAL_CONSOLE.print(tab + (self.LAST if is_last else self.MIDDLE) + f'📃 {entry["Name"]}')
+
+        # base case when an entry is a file
+        if (str(self.vol) == "NTFS" and
+            entry["Flags"] & NTFSAttribute.ARCHIVE) or (
+                str(self.vol) == "FAT32" and 
+                entry["Flags"] & FAT32Attribute.ARCHIVE
+            ):
+                return
+            
+        tab = self.BRANCH + tab + self.SPACE
+
+        # get all entry of a folder
+        entry_list = self.vol.get_dir_info(self.vol.get_cwd() + entry["Name"])
+
+        size = len(entry_list)
+        for i in range(0, size):
+            # FAT32 error handle
+            if entry_list[i]["Name"] in (".", ".."):
+                continue
+            self.__print_tree(entry_list[i], tab, i == size - 1)
+
     def do_tree(self, arg):
-        pass
+        entry_list = self.vol.get_dir_info(arg)
+
+        GLOBAL_CONSOLE.print(f'📂 [cyan]{self.vol.get_cwd()}') 
+
+        size = len(entry_list)
+        for i in range(0, size):
+            # FAT32 error handle
+            if entry_list[i]["Name"] in (".", ".."):
+                continue
+            self.__print_tree(entry_list[i], "", i == size - 1)

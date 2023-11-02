@@ -120,6 +120,7 @@ def print_greeting(again=False):
 
     GLOBAL_CONSOLE.print("- Lệnh [bold red]clear[/bold red] sẽ clear toàn bộ màn hình.")
     GLOBAL_CONSOLE.print("- Lệnh [bold red]exit[/bold red] sẽ thoát chương trình.")
+    GLOBAL_CONSOLE.print("- Lệnh [bold red]type[/bold red] để in loại của volume hiện tại.")
     GLOBAL_CONSOLE.print("- Lệnh [bold red]ls <path>[/bold red] sẽ liệt kê những file và folder có trong path.")
     GLOBAL_CONSOLE.print("- Lệnh [bold red]pwd[/bold red] sẽ in ra vị trí hiện tại.")
     GLOBAL_CONSOLE.print("- Lệnh [bold red]cd <path>[/bold red] sẽ thay đổi vị trí hiện tại thành path.")
