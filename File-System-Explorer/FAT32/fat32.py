@@ -5,6 +5,7 @@ import re
 class FAT32:
     def __init__(self,vol_name) -> None:
         self.name= vol_name
+        self.cwd=[vol_name]
         try:
             self.fd= open(r'\\.\%s'%self.name,'rb')
         except FileNotFoundError:
@@ -41,6 +42,11 @@ class FAT32:
     
     
     """ Methods """
+    def get_cwd(self):
+        if len(self.cwd) == 1:
+            return self.cwd[0] + "\\"
+        return "\\".join(self.cwd)
+    
     # Parse path
     def parse_path(self, path):
         dirs = re.sub(r"[/\\]+", r"\\", path).strip("\\").split("\\")
