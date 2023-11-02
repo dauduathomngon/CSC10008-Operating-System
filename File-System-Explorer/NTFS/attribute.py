@@ -2,8 +2,6 @@ from enum import Flag
 from NTFS.boot_sector import BootSector
 from utils import to_datetime
 
-from icecream import ic
-
 # ------------------------------------
 # Generic Attribute
 # ------------------------------------

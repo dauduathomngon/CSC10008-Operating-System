@@ -3,8 +3,6 @@ from FAT32.fat import FAT
 from FAT32.rdet import RDET
 from utils import parse_path
 
-from icecream import ic
-
 class FAT32:
     def __init__(self,vol_name) -> None:
         self.name= vol_name
