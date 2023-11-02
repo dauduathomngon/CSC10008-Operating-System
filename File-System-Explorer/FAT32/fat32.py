@@ -1,27 +1,25 @@
 from FAT32.bootsector import BootSector
 from FAT32.fat import FAT
 from FAT32.rdet import RDET
-import re
+from utils import parse_path
+
+from icecream import ic
+
 class FAT32:
     def __init__(self,vol_name) -> None:
         self.name= vol_name
+
+        self.cwd=[vol_name]
+
         try:
             self.fd= open(r'\\.\%s'%self.name,'rb')
-        except FileNotFoundError:
-            print(f"[ERROR] No volume named {self.name}")
-            exit()
         except PermissionError:
-            print("[ERROR] Permission denied, try again as admin/root")
-            exit()
-        except Exception as e:
-            print(e)
-            print("[ERROR] Unknown error occurred")
-            exit() 
+            raise PermissionError
+
         try:
             boot_sector_raw = self.fd.read(0x200)
         except Exception as e:
-            print(f"[Error] {e}")
-            exit()
+            raise e
             
         # Read bootsector
         self.bootsector = BootSector(boot_sector_raw)
@@ -37,19 +35,20 @@ class FAT32:
         self.DET={} # To archive DET of all folder in Root directory
         self.RDET= RDET(self.get_cluster_data(self.bootsector.start_cluster_RDET))
         self.DET[self.bootsector.start_cluster_RDET] =self.RDET
-    
-    
+
+    @property
+    def boot_sector_info(self) -> str:
+        return f"Volume name: {self.name[0]}" + str(self.bootsector)
     
     """ Methods """
-    # Parse path
-    def parse_path(self, path):
-        dirs = re.sub(r"[/\\]+", r"\\", path).strip("\\").split("\\")
-        return dirs
+    def get_cwd(self):
+        if len(self.cwd) == 1:
+            return self.cwd[0] + "\\"
+        return "\\".join(self.cwd)
     
     # Cluster to sector index
     def cluster_to_sector(self,clusterIndex):
         return self.bootsector.reserved_sectors+self.bootsector.number_of_FAT_table*self.bootsector.sectors_per_FAT+(clusterIndex-2)*self.bootsector.sectors_per_cluster
-    
     
     # Read FAT table
     def read_FAT_table(self):
@@ -69,9 +68,7 @@ class FAT32:
           
     # Visit dir
     def access_dir(self,path)-> RDET:
-        if path=="":
-            raise Exception("Directory name is required!")
-        dirs = self.parse_path(path)
+        dirs = parse_path(path)
         
         if dirs[0]==self.name:
             currentDET = self.RDET
@@ -82,7 +79,7 @@ class FAT32:
         for d in dirs:
             entry = currentDET.find_entry(d)
             if entry is None:
-                raise Exception("Directory not found!")
+                raise Exception("Not found!")
             if entry.is_directory():
                 # If entry is RDET
                 if entry.start_cluster==0:
@@ -97,40 +94,51 @@ class FAT32:
                 # Set folder to current DET 
                 currentDET = self.DET[entry.start_cluster]
             else:
-                raise Exception("Not a directory")
+                raise Exception("Not directory")
         return currentDET
                 
     # Get directory
     def get_dir_info(self, path):
-        try:
-            if path!="":
-                currentDET= self.access_dir(path)
-                entry_list = currentDET.get_active_entries()
-                
+        if path!="":
+            currentDET= self.access_dir(path)
+            entry_list = currentDET.get_active_entries()
+        else:
+            entry_list= self.RDET.get_active_entries()
+
+        ret = []
+        for entry in entry_list:
+            obj={}
+            obj["Flags"]= entry.attr
+            obj["Last Modified"] = entry.date_updated
+            obj["Size"] = entry.size
+            obj["Name"] = entry.long_name
+            if entry.start_cluster == 0:
+                obj["Sector Offset"] = (entry.start_cluster + 2) * self.bootsector.sectors_per_cluster
             else:
-                entry_list= self.RDET.get_active_entries()
-            ret = []
-            for entry in entry_list:
-                obj={}
-                obj["Flags"]= entry.attr.value
-                obj["Date Modified"] = entry.date_updated
-                obj["Size"] = entry.size
-                obj["Name"] = entry.long_name
-                if entry.start_cluster == 0:
-                    obj["Sector"] = (entry.start_cluster + 2) * self.bootsector.sectors_per_cluster
-                else:
-                    obj["Sector"] = entry.start_cluster * self.bootsector.sectors_per_cluster
-                ret.append(obj)
-            return ret
-        except Exception as e:
-            raise(e)
+                obj["Sector Offset"] = entry.start_cluster * self.bootsector.sectors_per_cluster
+            ret.append(obj)
+        return ret
         
     # Change dir
     def change_dir(self, path=""):
         if path == "":
-            raise Exception("Path to directory is required!")
+            raise Exception("Path is required")
+
         currentDET = self.access_dir(path)
         self.RDET = currentDET    
+
+        #Update the cwd
+        dirs = parse_path(path)
+        if dirs[0] == self.name:
+            self.cwd.clear()
+            self.cwd.append(self.name)
+            dirs.pop(0)
+        for d in dirs:
+            if d == "..":
+                if len(self.cwd) > 1: 
+                    self.cwd.pop()
+            elif d != ".":
+                self.cwd.append(d)
             
     # Check FAT32         
     @staticmethod
@@ -143,13 +151,12 @@ class FAT32:
                 if fat_name == b"FAT32   ":
                     return True
                 return False
-        except Exception as e:
-            print(f"[ERROR] {e}")
-            exit()    
+        except PermissionError:
+            raise PermissionError
     
     # Read text file
     def get_text_file(self,path):
-        path= self.parse_path(path)
+        path= parse_path(path)
         
          # ../abc/text.txt
         if len(path)>1:
@@ -162,9 +169,9 @@ class FAT32:
             entry = self.RDET.find_entry(path[0])
         
         if entry is None:
-            raise Exception("File doesn't exist")
+            raise Exception(f"File {path[-1]} does not exists")
         if entry.is_directory():
-            raise Exception("Is a directory")
+            raise Exception(f"{path[-1]} is not a file")
         
         # Get data cluster list from FAT table
         index_list = self.FAT_table[0].get_chain(entry.start_cluster)
@@ -178,21 +185,18 @@ class FAT32:
             # Seek offset (byte)
             self.fd.seek(offset*self.bootsector.bytes_per_sector)
             # Read 1 data cluster. If left data < cluster size then read size left
-            raw_data = self.fd.read(min(self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector, size_left))
-
+            raw_data=self.fd.read(min(self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector, size_left))
             size_left -= self.bootsector.sectors_per_cluster*self.bootsector.bytes_per_sector   
-
             try:
                 data+= raw_data.decode()
             except UnicodeDecodeError as e:
-                raise Exception("Not a text file, please use appropriate software to open.")
-            except Exception as e:
-                raise(e)
+                raise Exception("Not a .txt file")
 
         return data
             
-    
     def __del__(self):
         if getattr(self, "fd", None):
-            print("Closing Volume...")
             self.fd.close()
+
+    def __str__(self):
+        return "FAT32"
