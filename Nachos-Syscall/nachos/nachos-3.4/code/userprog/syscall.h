@@ -30,6 +30,10 @@
 #define SC_Fork		9
 #define SC_Yield	10
 
+#define SC_PrintInt 12
+#define SC_PrintChar 14
+#define SC_PrintString 16
+
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -109,7 +113,6 @@ int Read(char *buffer, int size, OpenFileId id);
 void Close(OpenFileId id);
 
 
-
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 
  */
@@ -123,6 +126,21 @@ void Fork(void (*func)());
  * or not. 
  */
 void Yield();		
+
+/*
+ * Print char
+ */
+void PrintChar(char c);
+
+/*
+ * Print String
+ */
+void PrintString(char* buffer);
+
+/*
+ * Print Int
+ */
+void PrintInt(int input);
 
 #endif /* IN_ASM */
 
