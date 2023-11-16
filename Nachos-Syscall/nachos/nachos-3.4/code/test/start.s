@@ -130,6 +130,7 @@ Yield:
 	j	$31
 	.end Yield
 
+/* Print String */
 	.globl PrintString
 	.ent	PrintString
 PrintString:
@@ -138,6 +139,7 @@ PrintString:
 	j	$31
 	.end PrintString
 
+/* Print Char */
 	.globl PrintChar
 	.ent	PrintChar
 PrintChar:
@@ -146,6 +148,7 @@ PrintChar:
 	j	$31
 	.end PrintChar
 
+/* Print Int */
 	.globl PrintInt
 	.ent	PrintInt
 PrintInt:
