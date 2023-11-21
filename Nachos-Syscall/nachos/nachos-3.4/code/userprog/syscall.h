@@ -30,9 +30,15 @@
 #define SC_Fork		9
 #define SC_Yield	10
 
-#define SC_PrintInt 12
-#define SC_PrintChar 14
-#define SC_PrintString 16
+/*
+ * Khai bao cac system call code
+ */
+#define SC_ReadInt	11
+#define SC_PrintInt	12
+#define SC_ReadChar	13
+#define SC_PrintChar	14
+#define SC_ReadString	15
+#define SC_PrintString	16
 
 #ifndef IN_ASM
 
@@ -113,6 +119,7 @@ int Read(char *buffer, int size, OpenFileId id);
 void Close(OpenFileId id);
 
 
+
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 
  */
@@ -125,22 +132,30 @@ void Fork(void (*func)());
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
  */
-void Yield();		
+void Yield();	
 
 /*
- * Print char
+ * Khai bao cac ham tuong ung voi syscall
  */
+
+// doc so nguyen
+int ReadInt();
+
+// in so nguyen
+void PrintInt(int input);
+
+// doc char
+char ReadChar();
+
+// in char
 void PrintChar(char c);
 
-/*
- * Print String
- */
+// doc string 
+void ReadString(char* buffer, int length);
+
+// in string
 void PrintString(char* buffer);
 
-/*
- * Print Int
- */
-void PrintInt(int input);
 
 #endif /* IN_ASM */
 

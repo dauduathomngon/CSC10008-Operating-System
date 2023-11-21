@@ -82,7 +82,46 @@ void PrintInt(int input);
 #endif /* SYSCALL_H */
 ```
 
-3. Sau đó ta sẽ viết logic cho hàm vừa mới khai báo trong ```syscall.h``` tại file ```exception.cc``` nằm trong ```code\userprog``` bằng cách thêm exception tương ứng:
+3. Ta vào 2 file ```start.s``` và ```start.s``` ở ```code\test``` để thêm các dòng này vào:
+```mips
+/* Start.s 
+ *	Assembly language assist for user programs running on top of Nachos.
+ *
+ *	Since we don't want to pull in the entire C library, we define
+ *	what we need for a user program here, namely Start and the system
+ *	calls.
+ */
+
+#define IN_ASM
+#include "syscall.h"
+
+        .text   
+        .align  2
+
+/* -------------------------------------------------------------
+ * __start
+ *	Initialize running a C program, by calling "main". 
+ *
+ * 	NOTE: This has to be first, so that it gets loaded at location 0.
+ *	The Nachos kernel always starts a program by jumping to location 0.
+ * -------------------------------------------------------------
+ */
+
+...
+
+/* PrintInt function */
+	.globl PrintInt
+	.ent	PrintInt
+PrintInt:
+	addiu $2,$0,SC_PrintInt
+	syscall
+	j	$31
+	.end PrintInt
+
+...
+```
+
+4. Sau đó ta sẽ viết logic cho hàm vừa mới khai báo trong ```syscall.h``` tại file ```exception.cc``` nằm trong ```code\userprog``` bằng cách thêm exception tương ứng:
 ```cpp
 void
 ExceptionHandler(ExceptionType which)
@@ -124,5 +163,3 @@ int main()
 5. Đi ra ngoài thư mục ```code```, chạy file ```test.sh``` và xem kết quả. Nếu ra như này, thì ta ok.
 
 <img src="../resources/run_test.png">
-
-# 3. Logic để viết exception

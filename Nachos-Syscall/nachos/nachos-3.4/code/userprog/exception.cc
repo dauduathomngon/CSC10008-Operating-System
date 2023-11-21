@@ -47,33 +47,42 @@
 //	"which" is the kind of exception.  The list of possible exceptions
 //	are in machine.h.
 
+// ---------------------------------------------
+// Thanh vien nhom:
+// 21120518 - Dang An Nguyen
+// 21120312 - Phan Nguyen Phuong
+// 21120498 - Do Hoang Long
+// 21120355 - Nguyen Anh Tu
+// 21120511 - Le Nguyen
+// ---------------------------------------------
+
 // Input:
 //	- Dia chi cua user space (int)
 //	- Do dai toi da cua buffer (int), thong thuong la 255
 // Output: Buffer (char*)
 // Purpose: Copy buffer tu system space chuyen sang cho user space
-char* User2System(int virtAddr,int limit)
+char *User2System(int virtAddr, int limit)
 {
-	int i;// index
-	int oneChar;
-	char* kernelBuf = NULL;
+    int i; // index
+    int oneChar;
+    char *kernelBuf = NULL;
 
-	kernelBuf = new char[limit +1];//need for terminal string
-				       //
-	if (kernelBuf == NULL)
-		return kernelBuf;
+    kernelBuf = new char[limit + 1]; // need for terminal string
+                                     //
+    if (kernelBuf == NULL)
+        return kernelBuf;
 
-	memset(kernelBuf,0,limit+1);
+    memset(kernelBuf, 0, limit + 1);
 
-	for (i = 0 ; i < limit ;i++)
-	{
-		machine->ReadMem(virtAddr+i,1,&oneChar);
-		kernelBuf[i] = (char)oneChar;
-		if (oneChar == 0)
-			break;
-	}
+    for (i = 0; i < limit; i++)
+    {
+        machine->ReadMem(virtAddr + i, 1, &oneChar);
+        kernelBuf[i] = (char)oneChar;
+        if (oneChar == 0)
+            break;
+    }
 
-	return kernelBuf;
+    return kernelBuf;
 }
 
 // Input:
@@ -82,24 +91,24 @@ char* User2System(int virtAddr,int limit)
 //	- Buffer (char*)
 // Output: So luong bytes copy tu system sang user
 // Purpose: Copy buffer tu System space sang User space
-int System2User(int virtAddr, int len, char* buffer)
+int System2User(int virtAddr, int len, char *buffer)
 {
-	if (len < 0)
-		return -1;
+    if (len < 0)
+        return -1;
 
-	if (len == 0)
-		return len;
+    if (len == 0)
+        return len;
 
-	int i = 0;
-	int oneChar = 0 ;
-	do
-	{
-		oneChar= (int) buffer[i];
-		machine->WriteMem(virtAddr+i,1,oneChar);
-		i ++;
-	} while(i < len && oneChar != 0);
+    int i = 0;
+    int oneChar = 0;
+    do
+    {
+        oneChar = (int)buffer[i];
+        machine->WriteMem(virtAddr + i, 1, oneChar);
+        i++;
+    } while (i < len && oneChar != 0);
 
-	return i;
+    return i;
 }
 
 //----------------------------------------------------------------------
@@ -113,178 +122,258 @@ int System2User(int virtAddr, int len, char* buffer)
 //----------------------------------------------------------------------
 
 // Tang thanh ghi
-void IncreasePC(){
+void IncreasePC()
+{
     // Plus 4 for moving to next command
-    int nextPC= machine->registers[NextPCReg]+4;
-    machine->registers[PrevPCReg]=machine->registers[PCReg];
-    machine->registers[PCReg]=machine->registers[NextPCReg];
-    machine->registers[NextPCReg]= nextPC;
+    int nextPC = machine->registers[NextPCReg] + 4;
+    machine->registers[PrevPCReg] = machine->registers[PCReg];
+    machine->registers[PCReg] = machine->registers[NextPCReg];
+    machine->registers[NextPCReg] = nextPC;
 }
 
-void
-ExceptionHandler(ExceptionType which)
+void ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
 
     switch (which)
-	{
-	case NoException:
-	    return;
+    {
+    case NoException:
+        return;
 
-	case PageFaultException:
-	{
-	    DEBUG('a', "\nPage fault.");
-	    printf("\n\nPage fault.");
-	    interrupt->Halt();
-	    break;
-	}
+    case PageFaultException:
+    {
+        DEBUG('a', "\nPage fault.");
+        printf("\n\nPage fault.");
+        interrupt->Halt();
+        break;
+    }
 
-	case ReadOnlyException:
-	{
-		DEBUG('a', "\nPage marked read-only");
-		printf("\n\nPage marked read-only");
-		interrupt->Halt();
-		break;
-	}
+    case ReadOnlyException:
+    {
+        DEBUG('a', "\nPage marked read-only");
+        printf("\n\nPage marked read-only");
+        interrupt->Halt();
+        break;
+    }
 
-	case BusErrorException:
-	{
+    case BusErrorException:
+    {
         DEBUG('a', "\nInvalid physical address");
-		printf("\n\nInvalid physical address");
-		interrupt->Halt();
-		break;
-	}
+        printf("\n\nInvalid physical address");
+        interrupt->Halt();
+        break;
+    }
 
-	case AddressErrorException:
-	{
-		DEBUG('a', "\n Address error.");
-		printf("\n\n Address error.");
-		interrupt->Halt();
-		break;
-	}
+    case AddressErrorException:
+    {
+        DEBUG('a', "\n Address error.");
+        printf("\n\n Address error.");
+        interrupt->Halt();
+        break;
+    }
 
-	case OverflowException:
-	{
-		DEBUG('a', "\nOverflow !!!");
-		printf("\n\nOverflow !!!");
-		interrupt->Halt();
-		break;
-	}
+    case OverflowException:
+    {
+        DEBUG('a', "\nOverflow !!!");
+        printf("\n\nOverflow !!!");
+        interrupt->Halt();
+        break;
+    }
 
-	case IllegalInstrException:
-	{
-		DEBUG('a', "\nIllegal instr.");
-		printf("\n\nIllegal instr.");
-		interrupt->Halt();
-		break;
-	}
+    case IllegalInstrException:
+    {
+        DEBUG('a', "\nIllegal instr.");
+        printf("\n\nIllegal instr.");
+        interrupt->Halt();
+        break;
+    }
 
-	case NumExceptionTypes:
-	{
-		DEBUG('a', "\nNumber exception types");
-		printf("\n\nNumber exception types");
-		interrupt->Halt();
-		break;
-	}
+    case NumExceptionTypes:
+    {
+        DEBUG('a', "\nNumber exception types");
+        printf("\n\nNumber exception types");
+        interrupt->Halt();
+        break;
+    }
 
-	case SyscallException:
-	{
-		switch (type)
-		{
-		case SC_Halt:
-		{
-			DEBUG('a', "Shutdown, initiated by user program.\n");
-			interrupt->Halt();
-			break;
-		}
+    case SyscallException:
+    {
+        switch (type)
+        {
+        case SC_Halt:
+        {
+            DEBUG('a', "Shutdown, initiated by user program.\n");
+            interrupt->Halt();
+            break;
+        }
 
-		case SC_Exit:
-		{
-			Exit(0);
-			break;
-		}
+        case SC_Exit:
+        {
+            Exit(0);
+            break;
+        }
 
-		case SC_PrintString:
-		{
-			int virtualAddress;
-			char* buf;
+        case SC_PrintString:
+        {
+            int virtualAddress;
+            char *buf;
 
-			// Lấy địa chỉ từ thanh ghi thứ 4
-			virtualAddress = machine->ReadRegister(4);
+            // Lấy địa chỉ từ thanh ghi thứ 4
+            virtualAddress = machine->ReadRegister(4);
 
-			// Biến buf của kernel lấy từ user (địa chỉ chuỗi từ thanh
-			// ghi thứ 4)
-			buf = User2System(virtualAddress, 255);
+            // Biến buf của kernel lấy từ user (địa chỉ chuỗi từ thanh
+            // ghi thứ 4)
+            buf = User2System(virtualAddress, 255);
 
-			int size = 0;
-			while (buf[size] != '\0') size++;
+            int size = 0;
+            while (buf[size] != '\0')
+                size++;
 
-			synchcons->Write(buf, size + 1);
+            synchcons->Write(buf, size + 1);
 
-			delete buf;
+            delete buf;
 
-			IncreasePC();
-			break;
-		}
+            IncreasePC();
+            break;
+        }
 
-		case SC_PrintChar:
-		{
-			char c = (char)machine->ReadRegister(4);
+        case SC_ReadChar:
+        {
+            char *buffer = new char[255 + 1]();
+            int length = synchcons->Read(buffer, 255);
 
-			synchcons->Write(&c,1);
+            if (length > 1)
+            {
+                DEBUG('a', "\nERROR: Chi duoc nhap duy nhat 1 ky tu!");
+                machine->WriteRegister(2, 0);
+            }
+            else if (length == 0)
+            {
+                DEBUG('a', "\nERROR: Ky tu rong!");
+                machine->WriteRegister(2, 0);
+            }
+            else
+            {
+                char result = buffer[0];
+                machine->WriteRegister(2, result);
+            }
 
-			IncreasePC();
-			break;
-		}
+            delete buffer;
+            IncreasePC();
+            break;
+        }
 
-		// => Cac anh se viet tiep o day
-		case SC_PrintInt:
-		{
-			int number = machine->ReadRegister(4);
-			if (number < 10 && number > 0)
-			{
-				char output = number + '0';
-				synchcons->Write(&output, 1);
-				IncreasePC();
-				break;
-			}
+        case SC_PrintChar:
+        {
+            char c = (char)machine->ReadRegister(4);
 
-			bool is_negative = false;
-			if (number < 0)
-			{
-				is_negative = true;
-				number *= -1;
-			}
+            synchcons->Write(&c, 1);
 
-			char* buffer = new char[255 + 1]();
-			int idx = 0;
-			while (number > 0)
-			{
-				buffer[idx++] = (number % 10) + '0';
-				number /= 10;
-			}
+            IncreasePC();
+            break;
+        }
 
-			if (is_negative)
-				buffer[idx] = '-';
+        // => Cac anh se viet tiep o day
+        case SC_PrintInt:
+        {
+            int number = machine->ReadRegister(4);
+            if (number < 10 && number >= 0)
+            {
+                char output = number + '0';
+                synchcons->Write(&output, 1);
+                IncreasePC();
+                return;
+            }
 
-			// reverse buffer
-			int i = idx;
-			char* reverse = new char[255 + 1]();
-			for (i; i >= 0; i--)
-			{
-				reverse[idx - i] = buffer[i];
-			}
-			reverse[++idx] = '\0';
+            bool is_negative = false;
+            if (number < 0)
+            {
+                is_negative = true;
+                number *= -1;
+            }
 
-			synchcons->Write(reverse, idx+1);
+            char *buffer = new char[255 + 1]();
+            int idx = 0;
+            while (number > 0)
+            {
+                buffer[idx++] = (number % 10) + '0';
+                number /= 10;
+            }
 
-			delete buffer;
-			delete reverse;
+            if (is_negative)
+                buffer[idx] = '-';
 
-			IncreasePC();
-			break;
-		}
-		}
-	}
+            // reverse buffer
+            int i;
+            char *reverse = new char[255 + 1]();
+            for (i = idx; i >= 0; i--)
+            {
+                reverse[idx - i] = buffer[i];
+            }
+            reverse[++idx] = '\0';
+
+            synchcons->Write(reverse, idx + 1);
+
+            delete buffer;
+            delete reverse;
+
+            IncreasePC();
+            break;
+        }
+
+        case SC_ReadString:
+        {
+            int virtualAddress = machine->ReadRegister(4);
+            int length = machine->ReadRegister(5);
+            char *buffer = User2System(virtualAddress, length);
+            synchcons->Read(buffer, length);
+            System2User(virtualAddress, length, buffer);
+            delete buffer;
+            IncreasePC();
+            break;
+        }
+
+        case SC_ReadInt:
+        {
+            char *buffer = new char[255 + 1]();
+            int maxBuffer = 255;
+            int sign = 1;
+            int start = 0;
+            int i;
+            int result = 0;
+            int size = synchcons->Read(buffer, maxBuffer);
+
+            for (i = 0; i < size; i++)
+            {
+                if (buffer[i] < '0' || buffer[i] > '9')
+                {
+                    DEBUG('a', "\nERROR: input khong phai la so!");
+                    machine->WriteRegister(2, 0);
+                    IncreasePC();
+                    return;
+                }
+            }
+
+            if (buffer[0] == '-')
+            {
+                // Bat dau doc tu 1
+                sign = -1;
+                start = 1;
+            }
+
+            for (i = start; i < size; i++)
+            {
+                result = result * 10 + (buffer[i] - '0');
+            }
+            result *= sign;
+
+            machine->WriteRegister(2, result);
+
+            delete buffer;
+            IncreasePC();
+            break;
+        }
+        }
+    }
     }
 }

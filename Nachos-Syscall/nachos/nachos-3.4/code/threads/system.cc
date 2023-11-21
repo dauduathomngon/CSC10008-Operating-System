@@ -180,7 +180,6 @@ Cleanup()
     
 #ifdef USER_PROGRAM
     delete machine;
-    delete synchcons;
 #endif
 
 #ifdef FILESYS_NEEDED

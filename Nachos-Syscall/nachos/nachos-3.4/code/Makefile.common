@@ -88,7 +88,7 @@ USERPROG_C = ../userprog/addrspace.cc\
 	../machine/mipssim.cc\
 	../machine/translate.cc
 
-USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o synchcons.o\
+USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o synchcons.o \
 	mipssim.o translate.o
 
 VM_H = 
