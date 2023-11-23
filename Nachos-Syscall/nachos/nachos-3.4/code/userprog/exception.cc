@@ -218,15 +218,12 @@ void ExceptionHandler(ExceptionType which)
             int virtualAddress;
             char *buf;
 
-            // Láº¥y Ä‘á»‹a chá»‰ tá»« thanh ghi thá»© 4
             virtualAddress = machine->ReadRegister(4);
 
-            // Biáº¿n buf cá»§a kernel láº¥y tá»« user (Ä‘á»‹a chá»‰ chuá»—i tá»« thanh
-            // ghi thá»© 4)
             buf = User2System(virtualAddress, 255);
 
             int size = 0;
-            while (buf[size] != '\0')
+            while (buf[size] != '\0' && size <255)
                 size++;
 
             synchcons->Write(buf, size + 1);
