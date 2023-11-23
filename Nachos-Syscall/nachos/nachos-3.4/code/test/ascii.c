@@ -11,31 +11,31 @@
 
 int main()
 {
-    int min = 33;
-    int max = 126;
+	int min = 33;
+	int max = 126;
 
-    int i = min; // row
-    
-    PrintString("Dec:    ASCII:     Dec:     ASCII:     Dec:     ASCII:     Dec:     ASCII: \n");
+	int i = min; // row
 
-    for (i; i <= max; i+=4)
-    {
-	int j = i; // column
-	for (j; j <= i + 3 && j <= max; j++) // print first three value
+	PrintString("Dec:    ASCII:     Dec:     ASCII:     Dec:     ASCII:     Dec:     ASCII: \n");
+
+	for (i; i <= max; i += 4)
 	{
-	    if (j != i)
-		PrintString("          ");
-	    PrintInt(j);
-	    if (j >= 100)
-		PrintString("      ");
-	    else
-		PrintString("       ");
-	    PrintChar((char)j);
+		int j = i;							 // column
+		for (j; j <= i + 3 && j <= max; j++) // print first three value
+		{
+			if (j != i)
+				PrintString("          ");
+			PrintInt(j);
+			if (j >= 100)
+				PrintString("      ");
+			else
+				PrintString("       ");
+			PrintChar((char)j);
+		}
+		PrintChar('\n');
 	}
+
 	PrintChar('\n');
-    }
 
-    PrintChar('\n');
-
-    Halt();
+	Halt();
 }
