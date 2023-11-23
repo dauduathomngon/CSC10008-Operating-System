@@ -218,11 +218,11 @@ void ExceptionHandler(ExceptionType which)
             int virtualAddress;
             char *buf;
 
-            // Lấy địa chỉ từ thanh ghi thứ 4
+            // Láº¥y Ä‘á»‹a chá»‰ tá»« thanh ghi thá»© 4
             virtualAddress = machine->ReadRegister(4);
 
-            // Biến buf của kernel lấy từ user (địa chỉ chuỗi từ thanh
-            // ghi thứ 4)
+            // Biáº¿n buf cá»§a kernel láº¥y tá»« user (Ä‘á»‹a chá»‰ chuá»—i tá»« thanh
+            // ghi thá»© 4)
             buf = User2System(virtualAddress, 255);
 
             int size = 0;
@@ -339,20 +339,10 @@ void ExceptionHandler(ExceptionType which)
             int maxBuffer = 255;
             int sign = 1;
             int start = 0;
-            int i;
+            int i, j;
             int result = 0;
+            int after_dot = 0;
             int size = synchcons->Read(buffer, maxBuffer);
-
-            for (i = 0; i < size; i++)
-            {
-                if (buffer[i] < '0' || buffer[i] > '9')
-                {
-                    DEBUG('a', "\nERROR: input khong phai la so!");
-                    machine->WriteRegister(2, 0);
-                    IncreasePC();
-                    return;
-                }
-            }
 
             if (buffer[0] == '-')
             {
@@ -362,6 +352,36 @@ void ExceptionHandler(ExceptionType which)
             }
 
             for (i = start; i < size; i++)
+            {
+                if (buffer[i] < '0' || buffer[i] > '9')
+                {
+                    if (buffer[i] == '.') // for example: 18.0000 is also a integer
+                    {
+                        after_dot++;
+                        for (j = i + 1; j < size; j++)
+                        {
+                            if (buffer[j] != '0')
+                            {
+                                DEBUG('a', "\nERROR: input khong phai la so!");
+                                machine->WriteRegister(2, 0);
+                                IncreasePC();
+                                return;
+                            }
+                            after_dot++;
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        DEBUG('a', "\nERROR: input khong phai la so!");
+                        machine->WriteRegister(2, 0);
+                        IncreasePC();
+                        return;
+                    }
+                }
+            }
+
+            for (i = start; i < size - after_dot; i++)
             {
                 result = result * 10 + (buffer[i] - '0');
             }
