@@ -12,7 +12,7 @@
 int main()
 {
     char c;
-    char* a;
+    char a[255];
     int n;
     
     PrintString("Moi ban nhap ky tu: ");
