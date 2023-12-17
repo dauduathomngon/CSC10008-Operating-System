@@ -14,6 +14,58 @@
 #include "addrspace.h"
 #include "synch.h"
 
+// ---------------------------------------------
+// Thanh vien nhom:
+// 21120518 - Dang An Nguyen
+// 21120312 - Phan Nguyen Phuong
+// 21120498 - Do Hoang Long
+// 21120355 - Nguyen Anh Tu
+// 21120511 - Le Nguyen
+// ---------------------------------------------
+
+/*
+ * Dung de chay mot process trong Nachos thong pTable:
+ * - Dau tien check xem co ton tai tien trinh khong, neu co thi lay ten tien trinh
+ * - Sau do tao vung nho (space) cho process do (dung constructor char* cua AddrSpace)
+ * - Sau do dat currentThread->space la space moi vua tao
+ */
+void
+StartProcessNoExec(int pid)
+{
+	// lay ten tien trinh tu bang tien trinh pTab
+	char* filename;
+	filename = pTab->GetFileName(pid);
+	
+	if (filename == NULL)
+	{
+		delete filename;
+		return;
+	}
+	else
+	{
+		AddrSpace* space;
+		space = new AddrSpace(filename);
+		
+		// khong du vung nho de tao hoac khong the tao
+		if (space == NULL)
+		{
+			DEBUG('a', "\nERROR: Khong the tao vung nho!");
+			delete space;
+			return;
+		}
+		
+		delete filename;
+		
+		currentThread->space = space;
+	
+		space->InitRegisters(); // set the initial register values 
+		space->RestoreState(); // load page table register 
+
+		machine->Run(); // jump to the user progam
+		ASSERT(FALSE);
+	}
+}
+
 //----------------------------------------------------------------------
 // StartProcess
 // 	Run a user program.  Open the executable, load it into

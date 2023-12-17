@@ -16,7 +16,8 @@
 class PCB
 {
 public:
-	PCB();
+	int parentID; // ID cua tien trinh cha
+	
 	PCB(int id);
 	~PCB();
 	
@@ -55,12 +56,15 @@ public:
 	void SetFileName(char* fn);
 	// Tra ve ten cua tien trinh
 	char* GetFileName();
+	
 private:
 	Semaphore* joinSem; // semephore cho qua trinh join
 	Semaphore* exitSem; // semaphore cho qua trinh exit
-	Semaphore* multex; // semaphore cho qua tirnh truy xuat doc quyen
+	Semaphore* multex; // semaphore cho qua trinh truy xuat doc quyen
 	int exitcode;
 	int numWait; // so tien trinh da join
+	char filename[50]; // ten cua tien trinh
+	Thread* m_thread; // thread cua tien trinh
 };
 
 #endif // PBC_H

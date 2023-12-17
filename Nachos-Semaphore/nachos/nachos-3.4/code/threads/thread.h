@@ -81,6 +81,9 @@ class Thread {
     int machineState[MachineStateSize];  // all registers except for stackTop
 
   public:
+	int processID; // id cua thread
+	int exitStatus;
+	  
     Thread(char* debugName);		// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted

@@ -14,6 +14,7 @@
 #include "bitmap.h"
 #include "synch.h"
 
+// kich thuoc toi da cua PTable
 #define MAX_PROCESS 10
 
 class PTable
@@ -28,7 +29,7 @@ public:
 	// huy cac doi tuong da tao
 	~PTable();
 	
-	// Xu ly cho system call SC_Exit
+	// Xu ly cho system call SC_Exec
 	int ExecUpdate(char* name);
 	
 	// Xu ly cho system call SC_Exit
@@ -52,8 +53,8 @@ public:
 private:
 	BitMap* bm; // danh dau cac vi tri da duoc su dung trong PCB
 	PCB* pcb[MAX_PROCESS];
-	int psize;
-	Semaphore* bmsem; // dun de ngan chan truong hop nap 2 tien trinh cung luc
+	int psize; // kich thuoc that cua PTable
+	Semaphore* bmsem; // dung de ngan chan truong hop nap 2 tien trinh cung luc
 };
 
 #endif // PTABLE_H

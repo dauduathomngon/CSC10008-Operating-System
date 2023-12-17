@@ -12,24 +12,37 @@
 #include "openfile.h"
 
 PTable::PTable(int size)
-: psize(size)
 {
 	int i;
 	
-	if (psize < 0)
-		return;
-
-	bm = new BitMap(psize);
-	bmsem = new Semaphore("bmsem", 1);
-	
-	for (i=0; i < MAX_PROCESS; i++)
+	if (size < 0)
 	{
-		pcb[i] = NULL;
+		DEBUG('a', "\nERROR: Kich thuoc PTable be hon 0!");
+		return;
 	}
+	else if (size > 10)
+	{
+		DEBUG('a', "\nERROR: Kich thuoc PTable vuot qua 10!");
+		return;
+	}
+	else
+	{
+		psize = size;
+		bm = new BitMap(psize);
+		bmsem = new Semaphore("bmsem", 1);
 	
-	bm->Mark(0);
+		// gan cac process control block ban dau la NULL
+		for (i=0; i < MAX_PROCESS; i++)
+		{
+			pcb[i] = NULL;
+		}
 	
-	// con thieu doan tao PCB
+		// dat bit 0 trong bitmap la 1 (da su dung)
+		bm->Mark(0);
+		
+		// tao PCB dau tien
+		pcb[0] = new PCB(0);
+	}
 }
 
 PTable::~PTable()
@@ -47,35 +60,159 @@ PTable::~PTable()
 
 int PTable::ExecUpdate(char* name)
 {
-	return 0;
+	// tranh truong hop nap chong nhieu tien trinh trong luc nap tien trinh
+	bmsem->P();
+	
+	// ten khong hop le
+	if (name == NULL)
+	{
+		DEBUG('a', "\nERROR: Ten khong duoc de trong!");
+		bmsem->V();
+		return -1;
+	}
+	
+	// tranh truong hop process goi lai chinh no
+	if (strcmp(name, currentThread->getName()) == 0)
+	{
+		DEBUG('a', "\nERROR: Process goi lai chinh no!");
+		bmsem->V();
+		return -1;
+	}
+	
+	// tim slot trong
+	int idx = this->GetFreeSlot();
+	
+	// neu khong con slot
+	if (idx < 0)
+	{
+		DEBUG('a', "\nERROR: Khong con slot trong!");
+		bmsem->V();
+		return -1;
+	}
+	
+	// neu con slot thi tien hanh tao pcb
+	pcb[idx] = new PCB(idx);
+	pcb[idx]->SetFileName(name);
+	pcb[idx]->parentID = currentThread->processID;
+	
+	// goi exec cua pcb moi vua tao
+	int result = pcb[idx]->Exec(name, idx);
+	
+	// giai phong semaphore khi da nap tien trinh xong
+	bmsem->V();
+	
+	// tra ve ket qua exec cua pcb
+	return result;
 }
 
 int PTable::ExitUpdate(int ec)
 {
-	return 0;
+	int id = currentThread->processID;
+	
+	if (!this->isExist(id))
+	{
+		DEBUG('a', "\nERROR: Khong ton tai process de exit!");
+		return 0;
+	}
+	
+	// chuong trinh main
+	if (id == 0)
+	{
+		// xoa di bo nho
+		delete currentThread->space;
+		currentThread->space = NULL;
+		
+		// sau do dung chuong trinh
+		interrupt->Halt();
+		
+		return 0;
+	}
+	else
+	{
+		// dau tien dat exitcode cua process co id hien tai
+		pcb[id]->SetExitCode(ec);
+		
+		// sau do giam so luong process dang cho cua process cha cua process hien tai
+		int parentID = pcb[id]->parentID;
+		pcb[parentID]->DecNumWait();
+		
+		// tiep theo giai phong tien trinh
+		pcb[id]->JoinRelease();
+		pcb[id]->ExitWait();
+		
+		// xoa process khoi PTable
+		this->Remove(id);
+		
+		// tra ve ket qua
+		return ec;
+	}
 }
 
 int PTable::JoinUpdate(int id)
 {
-	return 0;
+	// ID khong hop le
+	if (id < 0)
+	{
+		DEBUG('a', "\nERROR: ID khong hop le!");
+		return 0;
+	}
+	
+	// khong ton tai process
+	if (!this->isExist(id))
+	{
+		DEBUG('a', "\nERROR: Khong ton tai process!");
+		return 0;
+	}
+	
+	// neu ton tai nhung cha khong la process hien tai
+	int parentID = pcb[id]->parentID;
+	if (currentThread->processID != pcb[parentID])
+	{
+		DEBUG('a', "\nERROR: Process khong hop le!");
+		return 0;
+	}
+	
+	// tang numwait cua tien trinh cha va cho phep tien trinh con join voi tien trinh cha
+	pcb[parentID]->IncNumWait();
+	pcb[id]->JoinWait();
+	
+	// xu ly exit code 
+	int result = pcb[id]->GetExitCode();
+	pcb[id]->ExitRelease();
+	
+	return result;
 }
 
 int PTable::GetFreeSlot()
 {
-	return 0;
+	// tim trang trong
+	return bm->Find();
 }
 
 bool PTable::isExist(int pid)
 {
-	return false;
+	return bm->Test(pid);
 }
 
 void PTable::Remove(int pid)
 {
-
+	if (!isExist(pid))
+		return;
+	
+	// xoa id trong bitmap
+	bm->Clear(pid);
+	
+	// xoa process co id tuong ung ra khoi mang
+	delete pcb[pid];
+	pcb[pid] = NULL;
 }
 
 char* PTable::GetFileName(int id)
 {
-	return NULL;
+	if (!isExist(id))
+	{
+		DEBUG('a', "\nERROR: Khong ton tai process!");
+		return NULL;
+	}
+	return pcb[id]->GetFileName();
 }

@@ -81,7 +81,7 @@ public:
 	int Signal(char* name);
 	
 	// tim slot trong cho semaphore
-	int FindFreeSlot(int id);
+	int FindFreeSlot();
 	
 private:
 	BitMap* bm; // quan ly slot trong
