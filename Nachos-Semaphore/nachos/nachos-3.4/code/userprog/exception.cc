@@ -464,201 +464,201 @@ void ExceptionHandler(ExceptionType which)
             break;
         }
         case SC_CreateFile:
-		{
-			return;
-		}
+        {
+            return;
+        }
         case SC_Seek:
-		{
-			/*
-			 * Summary: Di den vi tri (position) trong file
-			 * Input: vi tri can den (int) va ID cua file (int)
-			 * Output: -1 (khong thanh cong), vi tri da di den (thanh cong)
-			 */
-			int pos = machine->ReadRegister(4); // vi tri can di den
-			int fileID = machine->ReadRegister(5); // id cua file
-			
-			// id cua file phai nam trong bang mo ta file (co gia tri tu 0->14).
-			if (fileID < 0 || fileID > 14)
-			{
-				printf("\nERROR: File nam ngoai bang mo ta file");
-				machine->WriteRegister(2, -1);
-				IncreasePC();
-				return;
-			}
-			
-			// file khong ton tai
-			if (fileSystem->openf[fileID] == NULL)
-			{
-				printf("\nERROR: File khong ton tai");
-				machine->WriteRegister(2, -1);
-				IncreasePC();
-				return;
-			}
-			
-			if (fileID == 0 || fileID == 1)
-			{
-				printf("\nERROR: Khong the goi Seek tren console");
-				machine->WriteRegister(2, -1);
-				IncreasePC();
-				return;
-			}
-			
-			// neu pos la -1 thi di den cuoi file (length cua file)
-			if (pos == -1)
-				pos = fileSystem->openf[fileID]->Length();
-			
-			// sau do di den vi tri trong file
-			fileSystem->openf[fileID]->Seek(pos);
-			machine->WriteRegister(2, pos);
-			IncreasePC();
-			return;
-		}
+        {
+            /*
+             * Summary: Di den vi tri (position) trong file
+             * Input: vi tri can den (int) va ID cua file (int)
+             * Output: -1 (khong thanh cong), vi tri da di den (thanh cong)
+             */
+            int pos = machine->ReadRegister(4);    // vi tri can di den
+            int fileID = machine->ReadRegister(5); // id cua file
+
+            // id cua file phai nam trong bang mo ta file (co gia tri tu 0->14).
+            if (fileID < 0 || fileID > 14)
+            {
+                printf("\nERROR: File nam ngoai bang mo ta file");
+                machine->WriteRegister(2, -1);
+                IncreasePC();
+                return;
+            }
+
+            // file khong ton tai
+            if (fileSystem->openf[fileID] == NULL)
+            {
+                printf("\nERROR: File khong ton tai");
+                machine->WriteRegister(2, -1);
+                IncreasePC();
+                return;
+            }
+
+            if (fileID == 0 || fileID == 1)
+            {
+                printf("\nERROR: Khong the goi Seek tren console");
+                machine->WriteRegister(2, -1);
+                IncreasePC();
+                return;
+            }
+
+            // neu pos la -1 thi di den cuoi file (length cua file)
+            if (pos == -1)
+                pos = fileSystem->openf[fileID]->Length();
+
+            // sau do di den vi tri trong file
+            fileSystem->openf[fileID]->Seek(pos);
+            machine->WriteRegister(2, pos);
+            IncreasePC();
+            return;
+        }
         case SC_Open:
-		{
-			/*
-			 * Summary: Mo file de dung cho viec doc hoac ghi
-			 * Input: ten file (char*) va loai cua file (int)
-			 * Output: ID cua file trong bang mo ta file neu thanh cong, -1 neu khong thanh cong
-			 */
-			int virtualAddress = machine->ReadRegister(4); // lay dia chi cua ten file
-			int type = machine->ReadRegister(5); // lay type cua file
-			
-			char* fileName; // doc ten file tu dia chi
-			fileName = User2System(virtualAddress, MAX_FILE_NAME);
-			
-			// kiem tra con slot trong khong
-			int freeSlot = fileSystem->FindFreeSlot();
-			
-			// khong con slot trong
-			if (freeSlot == -1)
-			{
-				printf("\nERROR: Khong con slot trong");
-				machine->WriteRegister(2, -1);
-				delete fileName;
-				IncreasePC();
-				return;
-			}
-			
-			// xu ly 3 truong hop
-			// truong hop 1, file binh thuong (khong la stdin hoac stdout)
-			if (type == 0 || type == 1)
-			{
-				// tien hanh mo file
-				fileSystem->openf[freeSlot] = fileSystem->Open(fileName, type);
-				
-				// mo file khong thanh cong
-				if (fileSystem->openf[freeSlot] == NULL)
-				{
-					printf("\nERROR: Khong the mo file");
-					machine->WriteRegister(2, -1);
-					delete fileName;
-					IncreasePC();
-					return;
-				}
-				
-				// mo file thanh cong
-				machine->WriteRegister(2, freeSlot);
-			}
-			else if (type == 2) // truong hop 2, file stdin
-			{
-				// ID cua stdin la 0
-				machine->WriteRegister(2, 0);
-			}
-			else // truong hop 3, file stdout
-			{
-				// ID cua stdout la 1
-				machine->WriteRegister(2, 1);
-			}
-			delete fileName;
-			IncreasePC();
-			break;
-		}
-		case SC_Close:
-		{
-			/*
-			 * Summary: Dong file voi ID
-			 * Input: ID cua file can dong
-			 */
-			int fileID;
-			fileID = machine->ReadRegister(4); // doc ID cua file
-			
-			if (fileID < 0 || fileID > 14)
-			{
-				printf("\nERROR: File nam ngoai bang mo ta file");
-				IncreasePC();
-				return;
-			}
-			
-			// file khong ton tai
-			if (fileSystem->openf[fileID] == NULL)
-			{
-				printf("\nERROR: File khong ton tai");
-				IncreasePC();
-				return;
-			}
-			
-			// neu file ton tai
-			// xoa file trong bang file
-			delete fileSystem->openf[fileID];
-			fileSystem->openf[fileID] = NULL;
-			IncreasePC();
-			return;
-		}
+        {
+            /*
+             * Summary: Mo file de dung cho viec doc hoac ghi
+             * Input: ten file (char*) va loai cua file (int)
+             * Output: ID cua file trong bang mo ta file neu thanh cong, -1 neu khong thanh cong
+             */
+            int virtualAddress = machine->ReadRegister(4); // lay dia chi cua ten file
+            int type = machine->ReadRegister(5);           // lay type cua file
+
+            char *fileName; // doc ten file tu dia chi
+            fileName = User2System(virtualAddress, MAX_FILE_NAME);
+
+            // kiem tra con slot trong khong
+            int freeSlot = fileSystem->FindFreeSlot();
+
+            // khong con slot trong
+            if (freeSlot == -1)
+            {
+                printf("\nERROR: Khong con slot trong");
+                machine->WriteRegister(2, -1);
+                delete fileName;
+                IncreasePC();
+                return;
+            }
+
+            // xu ly 3 truong hop
+            // truong hop 1, file binh thuong (khong la stdin hoac stdout)
+            if (type == 0 || type == 1)
+            {
+                // tien hanh mo file
+                fileSystem->openf[freeSlot] = fileSystem->Open(fileName, type);
+
+                // mo file khong thanh cong
+                if (fileSystem->openf[freeSlot] == NULL)
+                {
+                    printf("\nERROR: Khong the mo file");
+                    machine->WriteRegister(2, -1);
+                    delete fileName;
+                    IncreasePC();
+                    return;
+                }
+
+                // mo file thanh cong
+                machine->WriteRegister(2, freeSlot);
+            }
+            else if (type == 2) // truong hop 2, file stdin
+            {
+                // ID cua stdin la 0
+                machine->WriteRegister(2, 0);
+            }
+            else // truong hop 3, file stdout
+            {
+                // ID cua stdout la 1
+                machine->WriteRegister(2, 1);
+            }
+            delete fileName;
+            IncreasePC();
+            break;
+        }
+        case SC_Close:
+        {
+            /*
+             * Summary: Dong file voi ID
+             * Input: ID cua file can dong
+             */
+            int fileID;
+            fileID = machine->ReadRegister(4); // doc ID cua file
+
+            if (fileID < 0 || fileID > 14)
+            {
+                printf("\nERROR: File nam ngoai bang mo ta file");
+                IncreasePC();
+                return;
+            }
+
+            // file khong ton tai
+            if (fileSystem->openf[fileID] == NULL)
+            {
+                printf("\nERROR: File khong ton tai");
+                IncreasePC();
+                return;
+            }
+
+            // neu file ton tai
+            // xoa file trong bang file
+            delete fileSystem->openf[fileID];
+            fileSystem->openf[fileID] = NULL;
+            IncreasePC();
+            return;
+        }
         case SC_Read:
-		{	
+        {
             return;
-		}
-		case SC_Write:
-		{
+        }
+        case SC_Write:
+        {
             return;
-		}
-		case SC_CreateSemaphore:
-		{
-			int virtAddr = machine->ReadRegister(4);
-			int semval = machine->ReadRegister(5);
+        }
+        case SC_CreateSemaphore:
+        {
+            int virtAddr = machine->ReadRegister(4);
+            int semval = machine->ReadRegister(5);
 
-			char *name = User2System(virtAddr, MAX_FILE_LENGTH + 1);
-			if(name == NULL)
-			{
-				printf("\n Khong du bo nho trong System");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				IncreasePC();
-				break;
-			}
-			
-			int res = semTab->Create(name, semval);
+            char *name = User2System(virtAddr, MAX_FILE_LENGTH + 1);
+            if (name == NULL)
+            {
+                printf("\n Khong du bo nho trong System");
+                machine->WriteRegister(2, -1);
+                delete[] name;
+                IncreasePC();
+                break;
+            }
 
-			if(res == -1)
-			{
-				printf("\n Khong the khoi tao Semaphore");
-				machine->WriteRegister(2, -1);
-				delete[] name;
-				IncreasePC();
-				break;				
-			}
-			
-			delete[] name;
-			machine->WriteRegister(2, res);
-			IncreasePC();
-			break;
-		}
-		case SC_Wait:
-		{
-			return;
-		}
-		case SC_Signal:
-		{
-			return;
-		}
-		case SC_Exec:
-		{
-			return;
-		}
-		case SC_Join:
-		{
-			return;
-		}
+            int res = semTab->Create(name, semval);
+
+            if (res == -1)
+            {
+                printf("\n Khong the khoi tao Semaphore");
+                machine->WriteRegister(2, -1);
+                delete[] name;
+                IncreasePC();
+                break;
+            }
+
+            delete[] name;
+            machine->WriteRegister(2, res);
+            IncreasePC();
+            break;
+        }
+        case SC_Wait:
+        {
+            return;
+        }
+        case SC_Signal:
+        {
+            return;
+        }
+        case SC_Exec:
+        {
+            return;
+        }
+        case SC_Join:
+        {
+            return;
+        }
         }
     }
     }

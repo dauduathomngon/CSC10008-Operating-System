@@ -22,13 +22,13 @@ PCB::PCB(int id)
 		this->parentID = -1;
 	else
 		this->parentID = currentThread->processID;
-	
+
 	// tien trinh van chua duoc chay
 	this->m_thread = NULL;
-	
+
 	this->numWait = 0;
 	this->exitcode = 0;
-	
+
 	joinSem = new Semaphore("joinsem", 1);
 	exitSem = new Semaphore("exitsem", 1);
 	multex = new Semaphore("multex", 1);
@@ -39,10 +39,10 @@ PCB::~PCB()
 	delete joinSem;
 	delete exitSem;
 	delete multex;
-	
+
 	// giai phong tien trinh khoi bo nho
 	delete m_thread->space;
-	
+
 	// hoan thanh chay tien trinh
 	m_thread->Finish();
 }
@@ -57,12 +57,12 @@ void PCB::SetExitCode(int ec)
 	this->exitcode = ec;
 }
 
-char* PCB::GetFileName()
+char *PCB::GetFileName()
 {
 	return this->filename;
 }
 
-void PCB::SetFileName(char* fn)
+void PCB::SetFileName(char *fn)
 {
 	strcpy(this->filename, fn);
 }
@@ -106,8 +106,8 @@ void PCB::DecNumWait()
 	// chua co tien trinh nao wait the nen khong giam so luong wait xuong duoc
 	if (numWait == 0)
 		return;
-	
-	// doi den khi duoc thuc hien 
+
+	// doi den khi duoc thuc hien
 	multex->P();
 	// tien hanh giam so luong wait
 	numWait--;
@@ -117,7 +117,7 @@ void PCB::DecNumWait()
 
 void PCB::IncNumWait()
 {
-	// doi den khi duoc thuc hien 
+	// doi den khi duoc thuc hien
 	multex->P();
 	// tien hanh tang so luong wait
 	numWait++;
@@ -125,14 +125,14 @@ void PCB::IncNumWait()
 	multex->V();
 }
 
-int PCB::Exec(char* filename, int pid)
+int PCB::Exec(char *filename, int pid)
 {
 	// tranh truong hop nap chong nhieu tien trinh trong luc nap tien trinh
 	multex->P();
-	
+
 	// tao thread cho tien trinh
 	m_thread = new Thread(filename);
-	
+
 	// khong the tao tien trinh
 	if (m_thread == NULL)
 	{
@@ -140,16 +140,16 @@ int PCB::Exec(char* filename, int pid)
 		multex->V();
 		return -1;
 	}
-	
-	m_thread->processID = pid; // dat pid la id cua thread moi tao
+
+	m_thread->processID = pid;			 // dat pid la id cua thread moi tao
 	parentID = currentThread->processID; // thread hien tai se la cha cua thread moi tao
-	
+
 	// sau do tien hanh chay thread
 	m_thread->Fork(StartProcessNoExec, pid);
-	
+
 	// giai phong semaphore khi da nap tien trinh xong
 	multex->V();
-	
+
 	// tra ve ID cua process
 	return pid;
 }

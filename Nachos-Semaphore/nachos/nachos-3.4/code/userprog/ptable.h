@@ -25,36 +25,36 @@ public:
 	 * Nho khoi tao bm va bmsen de su dung
 	 */
 	PTable(int size);
-	
+
 	// huy cac doi tuong da tao
 	~PTable();
-	
+
 	// Xu ly cho system call SC_Exec
-	int ExecUpdate(char* name);
-	
+	int ExecUpdate(char *name);
+
 	// Xu ly cho system call SC_Exit
 	int ExitUpdate(int ec);
-	
+
 	// Xu ly cho system call SC_Join
 	int JoinUpdate(int id);
-	
+
 	// Tim slot trong de luu tien trinh moi
 	int GetFreeSlot();
-	
+
 	// Kiem tra co ton tai tien trinh nao voi pid khong
 	bool isExist(int pid);
-	
+
 	// Khi tien trinh ket thuc, xoa pid cua no ra khoi mang
 	void Remove(int pid);
-	
+
 	// Tra ve ten cua tien trinh
-	char* GetFileName(int id);
-	
+	char *GetFileName(int id);
+
 private:
-	BitMap* bm; // danh dau cac vi tri da duoc su dung trong PCB
-	PCB* pcb[MAX_PROCESS];
-	int psize; // kich thuoc that cua PTable
-	Semaphore* bmsem; // dung de ngan chan truong hop nap 2 tien trinh cung luc
+	BitMap *bm; // danh dau cac vi tri da duoc su dung trong PCB
+	PCB *pcb[MAX_PROCESS];
+	int psize;		  // kich thuoc that cua PTable
+	Semaphore *bmsem; // dung de ngan chan truong hop nap 2 tien trinh cung luc
 };
 
 #endif // PTABLE_H

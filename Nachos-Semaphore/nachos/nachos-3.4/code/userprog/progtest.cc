@@ -1,11 +1,11 @@
-// progtest.cc 
+// progtest.cc
 //	Test routines for demonstrating that Nachos can load
-//	a user program and execute it.  
+//	a user program and execute it.
 //
 //	Also, routines for testing the Console hardware device.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -29,13 +29,12 @@
  * - Sau do tao vung nho (space) cho process do (dung constructor char* cua AddrSpace)
  * - Sau do dat currentThread->space la space moi vua tao
  */
-void
-StartProcessNoExec(int pid)
+void StartProcessNoExec(int pid)
 {
 	// lay ten tien trinh tu bang tien trinh pTab
-	char* filename;
+	char *filename;
 	filename = pTab->GetFileName(pid);
-	
+
 	if (filename == NULL)
 	{
 		printf("\nERROR: Khong ton tai tien trinh");
@@ -44,9 +43,9 @@ StartProcessNoExec(int pid)
 	}
 	else
 	{
-		AddrSpace* space;
+		AddrSpace *space;
 		space = new AddrSpace(filename);
-		
+
 		// khong du vung nho de tao hoac khong the tao
 		if (space == NULL)
 		{
@@ -54,13 +53,13 @@ StartProcessNoExec(int pid)
 			delete space;
 			return;
 		}
-		
+
 		delete filename;
-		
+
 		currentThread->space = space;
-	
-		space->InitRegisters(); // set the initial register values 
-		space->RestoreState(); // load page table register 
+
+		space->InitRegisters(); // set the initial register values
+		space->RestoreState();	// load page table register
 
 		machine->Run(); // jump to the user progam
 		ASSERT(FALSE);
@@ -73,26 +72,26 @@ StartProcessNoExec(int pid)
 //	memory, and jump to it.
 //----------------------------------------------------------------------
 
-void
-StartProcess(char *filename)
+void StartProcess(char *filename)
 {
-    OpenFile *executable = fileSystem->Open(filename);
-    AddrSpace *space;
+	OpenFile *executable = fileSystem->Open(filename);
+	AddrSpace *space;
 
-    if (executable == NULL) {
-	printf("Unable to open file %s\n", filename);
-	return;
-    }
-    space = new AddrSpace(executable);    
-    currentThread->space = space;
+	if (executable == NULL)
+	{
+		printf("Unable to open file %s\n", filename);
+		return;
+	}
+	space = new AddrSpace(executable);
+	currentThread->space = space;
 
-    delete executable;			// close file
+	delete executable; // close file
 
-    space->InitRegisters();		// set the initial register values
-    space->RestoreState();		// load page table register
+	space->InitRegisters(); // set the initial register values
+	space->RestoreState();	// load page table register
 
-    machine->Run();			// jump to the user progam
-    ASSERT(FALSE);			// machine->Run never returns;
+	machine->Run(); // jump to the user progam
+	ASSERT(FALSE);	// machine->Run never returns;
 					// the address space exits
 					// by doing the syscall "exit"
 }
@@ -118,20 +117,21 @@ static void WriteDone(int arg) { writeDone->V(); }
 //	the output.  Stop when the user types a 'q'.
 //----------------------------------------------------------------------
 
-void 
-ConsoleTest (char *in, char *out)
+void ConsoleTest(char *in, char *out)
 {
-    char ch;
+	char ch;
 
-    console = new Console(in, out, ReadAvail, WriteDone, 0);
-    readAvail = new Semaphore("read avail", 0);
-    writeDone = new Semaphore("write done", 0);
-    
-    for (;;) {
-	readAvail->P();		// wait for character to arrive
-	ch = console->GetChar();
-	console->PutChar(ch);	// echo it!
-	writeDone->P() ;        // wait for write to finish
-	if (ch == 'q') return;  // if q, quit
-    }
+	console = new Console(in, out, ReadAvail, WriteDone, 0);
+	readAvail = new Semaphore("read avail", 0);
+	writeDone = new Semaphore("write done", 0);
+
+	for (;;)
+	{
+		readAvail->P(); // wait for character to arrive
+		ch = console->GetChar();
+		console->PutChar(ch); // echo it!
+		writeDone->P();		  // wait for write to finish
+		if (ch == 'q')
+			return; // if q, quit
+	}
 }
