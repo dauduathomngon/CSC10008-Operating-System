@@ -14,6 +14,7 @@ int main()
     char c;
     char a[255];
     int n;
+	int result;
     
     PrintString("Moi ban nhap ky tu: ");
     c = ReadChar(); // done
@@ -29,6 +30,14 @@ int main()
     ReadString(a, 255);
     PrintString("Chuoi sau khi nhap: ");
     PrintString(a);
+	
+	PrintString("\nTao semaphore name = lenguyen, semval = 1");
+	result = CreateSemaphore("lenguyen", 1);
+	
+	if (result == 0)
+	{
+		PrintString("\nDa tao thanh cong semaphore");
+	}
     
     PrintChar('\n');
     Halt();

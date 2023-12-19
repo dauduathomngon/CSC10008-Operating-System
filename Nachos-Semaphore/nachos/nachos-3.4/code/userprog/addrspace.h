@@ -24,8 +24,8 @@ class AddrSpace {
 					// initializing it with the program
 					// stored in the file "executable"
     ~AddrSpace();			// De-allocate an address space
-   
-    // Them vao cho viec doc file
+	
+	// Them vao cho viec doc file
     AddrSpace(char* filename);
 
     void InitRegisters();		// Initialize user-level CPU registers,

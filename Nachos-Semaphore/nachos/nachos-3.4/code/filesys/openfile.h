@@ -17,6 +17,7 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+
 #ifndef OPENFILE_H
 #define OPENFILE_H
 
@@ -27,31 +28,98 @@
 					// Nachos file system as calls to UNIX!
 					// See definitions listed under #else
 class OpenFile {
+  // ---------------------------------------------
+  // Thanh vien nhom:
+  // 21120518 - Dang An Nguyen
+  // 21120312 - Phan Nguyen Phuong
+  // 21120498 - Do Hoang Long
+  // 21120355 - Nguyen Anh Tu
+  // 21120511 - Le Nguyen
+  // ---------------------------------------------
+
   public:
-    OpenFile(int f) { file = f; currentOffset = 0; }	// open the file
-    ~OpenFile() { Close(file); }			// close the file
-
-    int ReadAt(char *into, int numBytes, int position) { 
-    		Lseek(file, position, 0); 
-		return ReadPartial(file, into, numBytes); 
-		}	
-    int WriteAt(char *from, int numBytes, int position) { 
-    		Lseek(file, position, 0); 
-		WriteFile(file, from, numBytes); 
-		return numBytes;
-		}	
-    int Read(char *into, int numBytes) {
-		int numRead = ReadAt(into, numBytes, currentOffset); 
-		currentOffset += numRead;
-		return numRead;
-    		}
-    int Write(char *from, int numBytes) {
-		int numWritten = WriteAt(from, numBytes, currentOffset); 
-		currentOffset += numWritten;
-		return numWritten;
-		}
-
-    int Length() { Lseek(file, 0, 2); return Tell(file); }
+	  int type; // loai cua file
+	  // 0: doc va ghi
+	  // 1: chi doc
+	  // 2: nhap tu console (stdin)
+	  // 3: xuat ra console (stdout)
+	  
+	  OpenFile(int fileID) // mo file mac dinh (doc va ghi)
+	  {
+		  file = fileID;
+		  currentOffset = 0;
+		  type = 0;
+	  }
+	  
+	  OpenFile(int fileID, int fileType) // mo file theo type
+	  {
+		  file = fileID;
+		  currentOffset = 0;
+		  type = fileType;
+	  }
+	  
+	  ~OpenFile()
+	  {
+		  // dong file
+		  Close(file);
+	  }
+	  
+	  // di den vi tri pos trong file
+	  int Seek(int position)
+	  {
+		  Lseek(file, position, 0);
+		  currentOffset = Tell(file);
+		  return currentOffset;
+	  }
+	  
+	  // doc file tai pos voi do dai la nBytes
+	  int ReadAt(char* into, int numBytes, int position)
+	  {
+		  // di den vi tri pos
+		  Lseek(file, position, 0);
+		  // doc nBytes
+		  return ReadPartial(file, into, numBytes);
+	  }
+	  
+	  // ghi vao file chuoi from tai pos voi do dai nBytes
+	  int WriteAt(char* from, int numBytes, int position)
+	  {
+		  Lseek(file, position, 0);
+		  WriteFile(file, from, numBytes);
+		  return numBytes;
+	  }
+	  
+	  // doc file tai currentOffset voi do dai la nBytes sau do tang currentOffset len nBytes (sau khi doc)
+	  int Read(char *into, int numBytes)
+	  {
+		  int numRead = ReadAt(into, numBytes, currentOffset);
+		  currentOffset += numRead;
+		  return numRead;
+	  }
+	  
+	  int Write(char* from, int numBytes)
+	  {
+		  int numWritten = WriteAt(from, numBytes, currentOffset);
+		  currentOffset += numWritten;
+		  return numWritten;
+	  }
+	  
+	  int Length()
+	  {
+		  int len;
+		  // di den vi tri de doc do dai 
+		  Lseek(file, 0, 2);
+		  len = Tell(file);
+		  // sau do quay ve vi tri hien tai
+		  Lseek(file, currentOffset, 0);
+		  return len;
+	  }
+	  
+	  int GetCurrentPos()
+	  {
+		  currentOffset = Tell(file);
+		  return currentOffset;
+	  }
     
   private:
     int file;
@@ -63,8 +131,17 @@ class FileHeader;
 
 class OpenFile {
   public:
+	  int type; // loai cua file
+	  // 0: doc va ghi
+	  // 1: chi doc
+	  // 2: nhap tu console (stdin)
+	  // 3: xuat ra console (stdout)
+	  
     OpenFile(int sector);		// Open a file whose header is located
 					// at "sector" on the disk
+	
+	OpenFile(int sector, int type);
+	
     ~OpenFile();			// Close the file
 
     void Seek(int position); 		// Set the position from which to 
@@ -85,6 +162,11 @@ class OpenFile {
 					// file (this interface is simpler 
 					// than the UNIX idiom -- lseek to 
 					// end of file, tell, lseek back 
+	
+	int GetCurrentPos()
+	{
+		return seekPosition;
+	}
     
   private:
     FileHeader *hdr;			// Header for this file 

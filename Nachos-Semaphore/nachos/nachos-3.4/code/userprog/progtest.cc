@@ -38,6 +38,7 @@ StartProcessNoExec(int pid)
 	
 	if (filename == NULL)
 	{
+		printf("\nERROR: Khong ton tai tien trinh");
 		delete filename;
 		return;
 	}
@@ -49,7 +50,7 @@ StartProcessNoExec(int pid)
 		// khong du vung nho de tao hoac khong the tao
 		if (space == NULL)
 		{
-			DEBUG('a', "\nERROR: Khong the tao vung nho!");
+			printf("\nERROR: Khong the tao vung nho");
 			delete space;
 			return;
 		}

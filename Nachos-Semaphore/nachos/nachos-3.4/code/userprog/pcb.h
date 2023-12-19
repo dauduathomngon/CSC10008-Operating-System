@@ -6,7 +6,6 @@
 // 21120355 - Nguyen Anh Tu
 // 21120511 - Le Nguyen
 // ---------------------------------------------
-
 #ifndef PCB_H
 #define PCB_H
 
@@ -67,4 +66,4 @@ private:
 	Thread* m_thread; // thread cua tien trinh
 };
 
-#endif // PBC_H
+#endif // PCB_H

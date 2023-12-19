@@ -34,6 +34,24 @@ OpenFile::OpenFile(int sector)
     seekPosition = 0;
 }
 
+// ---------------------------------------------
+// Thanh vien nhom:
+// 21120518 - Dang An Nguyen
+// 21120312 - Phan Nguyen Phuong
+// 21120498 - Do Hoang Long
+// 21120355 - Nguyen Anh Tu
+// 21120511 - Le Nguyen
+// ---------------------------------------------
+
+// Constructor gom tham so type
+OpenFile::OpenFile(int sector, int type)
+{
+	hdr = new FileHeader;
+	hdr->FetchFrom(sector);
+	seekPosition = 0;
+	this->type = type;
+}
+
 //----------------------------------------------------------------------
 // OpenFile::~OpenFile
 // 	Close a Nachos file, de-allocating any in-memory data structures.

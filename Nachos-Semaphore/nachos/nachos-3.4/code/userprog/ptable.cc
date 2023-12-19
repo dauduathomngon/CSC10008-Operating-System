@@ -66,7 +66,7 @@ int PTable::ExecUpdate(char* name)
 	// ten khong hop le
 	if (name == NULL)
 	{
-		DEBUG('a', "\nERROR: Ten khong duoc de trong!");
+		printf("\nERROR: Ten khong duoc de trong");
 		bmsem->V();
 		return -1;
 	}
@@ -74,7 +74,7 @@ int PTable::ExecUpdate(char* name)
 	// tranh truong hop process goi lai chinh no
 	if (strcmp(name, currentThread->getName()) == 0)
 	{
-		DEBUG('a', "\nERROR: Process goi lai chinh no!");
+		printf("\nERROR: Process goi lai chinh no!");
 		bmsem->V();
 		return -1;
 	}
@@ -85,7 +85,7 @@ int PTable::ExecUpdate(char* name)
 	// neu khong con slot
 	if (idx < 0)
 	{
-		DEBUG('a', "\nERROR: Khong con slot trong!");
+		printf("\nERROR: Khong con slot trong!");
 		bmsem->V();
 		return -1;
 	}
@@ -109,23 +109,21 @@ int PTable::ExitUpdate(int ec)
 {
 	int id = currentThread->processID;
 	
-	if (!this->isExist(id))
-	{
-		DEBUG('a', "\nERROR: Khong ton tai process de exit!");
-		return 0;
-	}
-	
 	// chuong trinh main
 	if (id == 0)
 	{
-		// xoa di bo nho
-		delete currentThread->space;
-		currentThread->space = NULL;
+		// giai phong bo nho
+		currentThread->FreeSpace();
 		
 		// sau do dung chuong trinh
 		interrupt->Halt();
-		
 		return 0;
+	}
+	
+	if (!this->isExist(id))
+	{
+		printf("\nERROR: Khong ton tai process");
+		return -1;
 	}
 	else
 	{
@@ -153,23 +151,23 @@ int PTable::JoinUpdate(int id)
 	// ID khong hop le
 	if (id < 0)
 	{
-		DEBUG('a', "\nERROR: ID khong hop le!");
-		return 0;
+		printf("\nERROR: ID khong hop le!");
+		return -1;
 	}
 	
 	// khong ton tai process
 	if (!this->isExist(id))
 	{
-		DEBUG('a', "\nERROR: Khong ton tai process!");
-		return 0;
+		printf("\nERROR: Khong ton tai process!");
+		return -1;
 	}
 	
 	// neu ton tai nhung cha khong la process hien tai
 	int parentID = pcb[id]->parentID;
-	if (currentThread->processID != pcb[parentID])
+	if (currentThread->processID != pcb[parentID]->GetID())
 	{
-		DEBUG('a', "\nERROR: Process khong hop le!");
-		return 0;
+		printf("\nERROR: Process khong hop le!");
+		return -1;
 	}
 	
 	// tang numwait cua tien trinh cha va cho phep tien trinh con join voi tien trinh cha
@@ -211,7 +209,7 @@ char* PTable::GetFileName(int id)
 {
 	if (!isExist(id))
 	{
-		DEBUG('a', "\nERROR: Khong ton tai process!");
+		printf("\nERROR: Khong ton tai process!");
 		return NULL;
 	}
 	return pcb[id]->GetFileName();

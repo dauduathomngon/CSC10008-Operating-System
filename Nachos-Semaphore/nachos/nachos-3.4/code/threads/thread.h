@@ -81,9 +81,6 @@ class Thread {
     int machineState[MachineStateSize];  // all registers except for stackTop
 
   public:
-	int processID; // id cua thread
-	int exitStatus;
-	  
     Thread(char* debugName);		// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted
@@ -91,7 +88,26 @@ class Thread {
 					// is called
 
     // basic thread operations
-
+	
+	
+	// ---------------------------------------------
+	// Thanh vien nhom:
+	// 21120518 - Dang An Nguyen
+	// 21120312 - Phan Nguyen Phuong
+	// 21120498 - Do Hoang Long
+	// 21120355 - Nguyen Anh Tu
+	// 21120511 - Le Nguyen
+	// ---------------------------------------------
+	
+	int processID; // ID cua thread hien tai
+	int exitStatus;
+	
+	void FreeSpace() // giai phong vung nho
+	{
+		delete space;
+		space = NULL;
+	}
+	
     void Fork(VoidFunctionPtr func, int arg); 	// Make thread run (*func)(arg)
     void Yield();  				// Relinquish the CPU if any 
 						// other thread is runnable

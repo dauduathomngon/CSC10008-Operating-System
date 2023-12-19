@@ -18,27 +18,35 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SC_Halt		0
-#define SC_Exit		1
-#define SC_Exec		2
-#define SC_Join		3
-#define SC_Create	4
-#define SC_Open		5
-#define SC_Read		6
-#define SC_Write	7
-#define SC_Close	8
-#define SC_Fork		9
-#define SC_Yield	10
+#define SC_Halt			0
+#define SC_Exit			1
+#define SC_Exec			2
+#define SC_Join			3
+#define SC_CreateFile	4
+#define SC_Open			5
+#define SC_Read			6
+#define SC_Write		7
+#define SC_Close		8
+#define SC_Fork			9
+#define SC_Yield		10
 
 /*
  * Khai bao cac system call code
  */
-#define SC_ReadInt	11
-#define SC_PrintInt	12
-#define SC_ReadChar	13
+#define SC_ReadInt		11
+#define SC_PrintInt		12
+#define SC_ReadChar		13
 #define SC_PrintChar	14
 #define SC_ReadString	15
 #define SC_PrintString	16
+
+// dung de di chuyen trong file
+#define SC_Seek 		17
+
+// Syscall Semaphore
+#define SC_CreateSemaphore	18
+#define SC_Wait				19
+#define SC_Signal			20
 
 #ifndef IN_ASM
 
@@ -54,27 +62,10 @@
 
 /* Stop Nachos, and print out performance stats */
 void Halt();		
- 
-
-/* Address space control operations: Exit, Exec, and Join */
-
-/* This user program is done (status = 0 means exited normally). */
-void Exit(int status);	
 
 /* A unique identifier for an executing user program (address space) */
 typedef int SpaceId;	
  
-/* Run the executable, stored in the Nachos file "name", and return the 
- * address space identifier
- */
-SpaceId Exec(char *name);
- 
-/* Only return once the the user program "id" has finished.  
- * Return the exit status.
- */
-int Join(SpaceId id); 	
- 
-
 /* File system operations: Create, Open, Read, Write, Close
  * These functions are patterned after UNIX -- files represent
  * both files *and* hardware I/O devices.
@@ -95,30 +86,6 @@ typedef int OpenFileId;
 
 #define ConsoleInput	0  
 #define ConsoleOutput	1  
- 
-/* Create a Nachos file, with "name" */
-void Create(char *name);
-
-/* Open the Nachos file "name", and return an "OpenFileId" that can 
- * be used to read and write to the file.
- */
-OpenFileId Open(char *name);
-
-/* Write "size" bytes from "buffer" to the open file. */
-void Write(char *buffer, int size, OpenFileId id);
-
-/* Read "size" bytes from the open file into "buffer".  
- * Return the number of bytes actually read -- if the open file isn't
- * long enough, or if it is an I/O device, and there aren't enough 
- * characters to read, return whatever is available (for I/O devices, 
- * you should always wait until you can return at least one character).
- */
-int Read(char *buffer, int size, OpenFileId id);
-
-/* Close the file, we're done reading and writing to it. */
-void Close(OpenFileId id);
-
-
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 
@@ -134,9 +101,14 @@ void Fork(void (*func)());
  */
 void Yield();	
 
-/*
- * Khai bao cac ham tuong ung voi syscall
- */
+// ---------------------------------------------
+// Thanh vien nhom:
+// 21120518 - Dang An Nguyen
+// 21120312 - Phan Nguyen Phuong
+// 21120498 - Do Hoang Long
+// 21120355 - Nguyen Anh Tu
+// 21120511 - Le Nguyen
+// ---------------------------------------------
 
 // doc so nguyen
 int ReadInt();
@@ -156,6 +128,55 @@ void ReadString(char* buffer, int length);
 // in string
 void PrintString(char* buffer);
 
+/*
+ * Di chuyen den vi tri chi dinh trong file
+ */
+int Seek(int position, OpenFileId file);
+
+/*
+ * Mo file co name va type va tra ve ID 
+ */
+OpenFileId Open(char* name, int type);
+
+/*
+ * Dong file voi ID
+ */
+void Close(OpenFileId id);
+
+/*
+ * Thuc hien doc file sau do ghi vao buffer 
+ */
+int Read(char* buffer, int charCount, OpenFileId id);
+
+/*
+ * Thuc hien ghi buffer vao file
+ */
+int Write(char* buffer, int charCount, OpenFileId id);
+
+/*
+ * Thuc hien tao file voi ten "name"
+ */
+int CreateFile(char *name);
+
+/*
+ * Thuc hien tao semaphore
+ */
+int CreateSemaphore(char* name, int semval);
+
+int Wait(char* name);
+
+int Signal(char* name);
+
+/*
+ * Chay file thuc thi, luu trong Nachos file ten la "name" va tra ve address space indentifier
+ */
+SpaceId Exec(char *name);
+
+/*
+ * Chi return 1 lan khi chuong trinh nguoi dung voi "id" da chay xong
+ * Tra ve trang thai Exit
+ */
+int Join(SpaceId id); 	
 
 #endif /* IN_ASM */
 

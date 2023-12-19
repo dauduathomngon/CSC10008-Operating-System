@@ -42,11 +42,6 @@ class Semaphore {
     ~Semaphore();   					// de-allocate semaphore
     char* getName() { return name;}			// debugging assist
     
-    /*
-	 * Note:
-	 * P() la ham wait()
-	 * V() la ham signal()
-	 */
     void P();	 // these are the only operations on a semaphore
     void V();	 // they are both *atomic*
     

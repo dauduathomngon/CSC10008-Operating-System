@@ -24,9 +24,12 @@ STable::~STable()
 	int i;
 	
 	delete bm;
+	bm = NULL;
+	
 	for (i = 0; i < MAX_SEMAPHORE; i++)
 	{
 		delete semTab[i];
+		semTab[i] = NULL;
 	}
 }
 
@@ -41,7 +44,7 @@ int STable::Create(char* name, int init)
         {
             if (strcmp(name, semTab[i]->GetName()) == 0)
             {
-				DEBUG('a', "\nERROR: Da ton tai semaphore!");
+				printf("\nERROR: Da ton tai semaphore!");
                 return -1;
             }
         }
@@ -53,13 +56,12 @@ int STable::Create(char* name, int init)
 	// Neu k tim thay thi tra ve -1
     if (id < 0)
     {
-		DEBUG('a', "\nERROR: Khong con vi tri trong!");
+		printf("\nERROR: Khong con vi tri trong!");
         return -1;
     }
 
     // Neu tim thay slot trong thi nap Semaphore vao semTab[id]
     this->semTab[id] = new Sem(name, init);
-	
 	return 0;
 }
 
@@ -80,7 +82,7 @@ int STable::Wait(char* name)
             }
         }
     }
-    DEBUG('a', "\nERROR: Khong ton tai semaphore!");
+    printf("\nERROR: Khong ton tai semaphore!");
     return -1;
 }
 
@@ -101,7 +103,7 @@ int STable::Signal(char* name)
             }
         }
     }
-    DEBUG('a', "\nERROR: Khong ton tai semaphore!");
+    printf("\nERROR: Khong ton tai semaphore!");
     return -1;
 }
 
