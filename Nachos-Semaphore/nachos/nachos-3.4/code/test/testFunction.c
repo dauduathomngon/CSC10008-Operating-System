@@ -11,22 +11,5 @@
 
 int main()
 {
-	int result;
-
-	PrintString("\nTao semaphore name = lenguyen, semval = 1");
-	result = CreateSemaphore("lenguyen", 1);
-
-	if (result == 0)
-	{
-		PrintString("\nDa tao thanh cong semaphore");
-	}
-
-	result = Exec("./test/help");
-	if (result != 0)
-	{
-		PrintString("\nChay chuong trinh thanh cong");
-	}
-
-	PrintChar('\n');
 	Halt();
 }

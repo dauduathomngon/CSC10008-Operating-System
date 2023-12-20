@@ -24,6 +24,7 @@ public:
 	 * Khoi tao size PCB de luu size process. Gan gia tri ban dau la null
 	 * Nho khoi tao bm va bmsen de su dung
 	 */
+	PTable();
 	PTable(int size);
 
 	// huy cac doi tuong da tao

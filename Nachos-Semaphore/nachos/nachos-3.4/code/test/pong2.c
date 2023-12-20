@@ -11,16 +11,11 @@
 
 int main()
 {
-	int pingID;
-	int pongID;
-
-	PrintString("Test chuong trinh Ping Pong:\n\n");
-
-	// tao 2 tien trinh
-	pingID = Exec("./test/ping");
-	pongID = Exec("./test/pong");
-
-	// cho 2 tien trinh chay xen ke nhau
-	Join(pingID);
-	Join(pongID);
+	int i;
+	for (i = 0; i < 1000; i++)
+	{
+		Down("pong2");
+		PrintChar('B');
+		Up("ping2");
+	}
 }

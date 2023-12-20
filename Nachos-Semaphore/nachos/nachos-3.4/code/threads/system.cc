@@ -33,7 +33,7 @@ SynchConsole *synchcons;
 BitMap *gPhysPageBitMap;
 Semaphore *addrLock;
 PTable *pTab;
-STable *semTab;
+STable *sTab;
 #endif
 
 #ifdef NETWORK
@@ -163,7 +163,7 @@ void Initialize(int argc, char **argv)
     gPhysPageBitMap = new BitMap(256);
     addrLock = new Semaphore("addrLock", 1);
     pTab = new PTable(10);
-    semTab = new STable();
+    sTab = new STable();
 #endif
 
 #ifdef FILESYS

@@ -113,9 +113,8 @@ void PCB::DecNumWait()
 	multex->P();
 	// tien hanh giam so luong wait
 	// chua co tien trinh nao wait the nen khong giam so luong wait xuong duoc
-	if (numWait <= 0)
-		return;
-	numWait--;
+	if (numWait > 0)
+		--numWait;
 	// giai phong tien trinh
 	multex->V();
 }
@@ -125,7 +124,7 @@ void PCB::IncNumWait()
 	// doi den khi duoc thuc hien
 	multex->P();
 	// tien hanh tang so luong wait
-	numWait++;
+	++numWait;
 	// giai phong tien trinh
 	multex->V();
 }

@@ -21,6 +21,7 @@ int main()
 	char c; // ky tu de in ra man hinh
 	char writeBuffer[MAX_CHAR];
 	int writeSize;
+	char createFileName[MAX_FILE_NAME];
 
 	PrintString("Moi ban nhap ten file: ");
 	ReadString(fileName, MAX_FILE_NAME);
@@ -121,6 +122,18 @@ int main()
 	{
 		Read(&c, 1, openFileID);
 		PrintChar(c);
+	}
+	PrintString("\n-----------------------------------------------\n\n");
+
+	// tien hanh doc file lan nua de thay khac biet
+	PrintString("-----------------------------------------------\n");
+	PrintString("Tien hanh tao file\n");
+	PrintString("Moi nhap ten file muon tao: ");
+	ReadString(createFileName, MAX_FILE_NAME);
+	i = CreateFile(createFileName);
+	if (i == 0)
+	{
+		PrintString("Tao file thanh cong\n");
 	}
 	PrintString("\n-----------------------------------------------\n\n");
 

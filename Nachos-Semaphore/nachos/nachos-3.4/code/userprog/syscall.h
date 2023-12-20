@@ -178,6 +178,11 @@ SpaceId Exec(char *name);
  */
 int Join(SpaceId id);
 
+/*
+ * Chuong trinh nguoi dung da chay xong
+ */
+void Exit(int status);
+
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */

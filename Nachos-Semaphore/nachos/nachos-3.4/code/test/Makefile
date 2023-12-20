@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
  
-all: halt shell matmult sort help testFunction ascii writeFileTest scheduler
+all: halt shell matmult sort help testFunction ascii testFile scheduler ping pong scheduler2 ping2 pong2
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -66,6 +66,15 @@ matmult: matmult.o start.o
 	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
 	../bin/coff2noff matmult.coff matmult
 
+# ---------------------------------------------
+# Thanh vien nhom:
+# 21120518 - Dang An Nguyen
+# 21120312 - Phan Nguyen Phuong
+# 21120498 - Do Hoang Long
+# 21120355 - Nguyen Anh Tu
+# 21120511 - Le Nguyen
+# ---------------------------------------------
+	
 help.o: help.c
 	$(CC) $(CFLAGS) -c help.c
 help: help.o start.o
@@ -84,14 +93,44 @@ ascii: ascii.o start.o
 	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
 	../bin/coff2noff ascii.coff ascii
 	
-writeFileTest.o: writeFileTest.c
-	$(CC) $(CFLAGS) -c writeFileTest.c
-writeFileTest: writeFileTest.o writeFileTest.o
-	$(LD) $(LDFLAGS) start.o writeFileTest.o -o writeFileTest.coff
-	../bin/coff2noff writeFileTest.coff writeFileTest
+testFile.o: testFile.c
+	$(CC) $(CFLAGS) -c testFile.c
+testFile: testFile.o testFile.o
+	$(LD) $(LDFLAGS) start.o testFile.o -o testFile.coff
+	../bin/coff2noff testFile.coff testFile
 	
 scheduler.o: scheduler.c
 	$(CC) $(CFLAGS) -c scheduler.c
 scheduler: scheduler.o scheduler.o
 	$(LD) $(LDFLAGS) start.o scheduler.o -o scheduler.coff
 	../bin/coff2noff scheduler.coff scheduler
+	
+ping.o: ping.c
+	$(CC) $(CFLAGS) -c ping.c
+ping: ping.o ping.o
+	$(LD) $(LDFLAGS) start.o ping.o -o ping.coff
+	../bin/coff2noff ping.coff ping
+	
+pong.o: pong.c
+	$(CC) $(CFLAGS) -c pong.c
+pong: pong.o pong.o
+	$(LD) $(LDFLAGS) start.o pong.o -o pong.coff
+	../bin/coff2noff pong.coff pong
+	
+scheduler2.o: scheduler2.c
+	$(CC) $(CFLAGS) -c scheduler2.c
+scheduler2: scheduler2.o scheduler2.o
+	$(LD) $(LDFLAGS) start.o scheduler2.o -o scheduler2.coff
+	../bin/coff2noff scheduler2.coff scheduler2
+	
+ping2.o: ping2.c
+	$(CC) $(CFLAGS) -c ping2.c
+ping2: ping2.o ping2.o
+	$(LD) $(LDFLAGS) start.o ping2.o -o ping2.coff
+	../bin/coff2noff ping2.coff ping2
+	
+pong2.o: pong2.c
+	$(CC) $(CFLAGS) -c pong2.c
+pong2: pong2.o pong2.o
+	$(LD) $(LDFLAGS) start.o pong2.o -o pong2.coff
+	../bin/coff2noff pong2.coff pong2

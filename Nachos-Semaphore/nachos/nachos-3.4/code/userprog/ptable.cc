@@ -11,6 +11,20 @@
 #include "system.h"
 #include "openfile.h"
 
+PTable::PTable()
+{
+	int i;
+
+	psize = MAX_PROCESS;
+	bm = new BitMap(psize);
+	bmsem = new Semaphore("bmsem", 1);
+
+	for (i = 0; i < MAX_PROCESS; i++)
+	{
+		pcb[i] = NULL;
+	}
+}
+
 PTable::PTable(int size)
 {
 	int i;
@@ -18,11 +32,6 @@ PTable::PTable(int size)
 	if (size < 0)
 	{
 		printf("\nERROR: Kich thuoc PTable be hon 0!");
-		return;
-	}
-	else if (size > 10)
-	{
-		printf("\nERROR: Kich thuoc PTable vuot qua 10!");
 		return;
 	}
 	else
@@ -36,13 +45,6 @@ PTable::PTable(int size)
 		{
 			pcb[i] = NULL;
 		}
-
-		// dat bit 0 trong bitmap la 1 (da su dung)
-		bm->Mark(0);
-
-		// tao PCB dau tien
-		pcb[0] = new PCB(0);
-		pcb[0]->SetFileName("./test/scheduler");
 	}
 }
 
@@ -94,6 +96,9 @@ int PTable::ExecUpdate(char *name)
 		bmsem->V();
 		return -1;
 	}
+
+	// danh dau da su dung
+	bm->Mark(idx);
 
 	// neu con slot thi tien hanh tao pcb
 	pcb[idx] = new PCB(idx);
@@ -160,16 +165,9 @@ int PTable::JoinUpdate(int id)
 		return -1;
 	}
 
-	// khong ton tai process
-	if (!this->isExist(id))
-	{
-		printf("\nERROR: Khong ton tai process!");
-		return -1;
-	}
-
 	// neu ton tai nhung cha khong la process hien tai
 	int parentID = pcb[id]->parentID;
-	if (currentThread->processID != pcb[parentID]->GetID())
+	if (currentThread->processID != parentID)
 	{
 		printf("\nERROR: Process khong hop le!");
 		return -1;

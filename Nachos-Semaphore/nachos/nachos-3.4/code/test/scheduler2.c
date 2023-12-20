@@ -13,12 +13,18 @@ int main()
 {
 	int pingID;
 	int pongID;
+	int semPong;
+	int semPing;
 
 	PrintString("Test chuong trinh Ping Pong:\n\n");
 
+	// tao 2 semaphore
+	semPing = CreateSemaphore("ping2", 1);
+	semPong = CreateSemaphore("pong2", 0);
+
 	// tao 2 tien trinh
-	pingID = Exec("./test/ping");
-	pongID = Exec("./test/pong");
+	pingID = Exec("./test/ping2");
+	pongID = Exec("./test/pong2");
 
 	// cho 2 tien trinh chay xen ke nhau
 	Join(pingID);
