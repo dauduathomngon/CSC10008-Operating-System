@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
  
-all: halt shell matmult sort help testFunction ascii writeFileTest
+all: halt shell matmult sort help testFunction ascii writeFileTest scheduler
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -89,3 +89,9 @@ writeFileTest.o: writeFileTest.c
 writeFileTest: writeFileTest.o writeFileTest.o
 	$(LD) $(LDFLAGS) start.o writeFileTest.o -o writeFileTest.coff
 	../bin/coff2noff writeFileTest.coff writeFileTest
+	
+scheduler.o: scheduler.c
+	$(CC) $(CFLAGS) -c scheduler.c
+scheduler: scheduler.o scheduler.o
+	$(LD) $(LDFLAGS) start.o scheduler.o -o scheduler.coff
+	../bin/coff2noff scheduler.coff scheduler

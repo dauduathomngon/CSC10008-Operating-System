@@ -653,43 +653,43 @@ void ExceptionHandler(ExceptionType which)
         }
         case SC_Exec:
         {
-            /*
-             * Summary: Chay 1 file voi ten "name" duoc truyen vao
-             * Input: Ten file (char*)
-             * Output: -1 (that bai), id cua process neu thanh cong
-             */
-            int virtualAddress;
-            virtualAddress = machine->ReadRegister(4); // doc dia chi chua ten cua chuong trinh
-            char *name;
-            name = User2System(virtualAddress, MAX_FILE_LENGTH + 1); // lay ten cua chuong trinh
+	/*
+	* Summary: Chay 1 file voi ten "name" duoc truyen vao
+	* Input: Ten file (char*)
+	* Output: -1 (that bai), id cua process neu thanh cong
+	*/
+	int virtualAddress;
+	virtualAddress = machine->ReadRegister(4); // doc dia chi chua ten cua chuong trinh
+	char* name;
+	name = User2System(virtualAddress, MAX_FILE_LENGTH + 1); // lay ten cua chuong trinh
 
-            if (name == NULL)
-            {
-                printf("\nERROR: Ten khong hop le");
-                machine->WriteRegister(2, -1);
-                delete[] name;
-                IncreasePC();
-                return;
-            }
+	if (name == NULL)
+	{
+		printf("\nERROR: Ten khong hop le");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;
+	}
 
-            // thu xem file mo duoc khong
-            OpenFile *file = fileSystem->Open(name);
-            if (file == NULL)
-            {
-                printf("\nERROR: Khong the mo file");
-                machine->WriteRegister(2, -1);
-                delete[] name;
-                IncreasePC();
-                return;
-            }
-            delete file;
+	// thu xem file mo duoc khong
+	OpenFile* file = fileSystem->Open(name);
+	if (file == NULL)
+	{
+		printf("\nERROR: Khong the mo file");
+		machine->WriteRegister(2, -1);
+		delete[] name;
+		IncreasePC();
+		return;
+	}
+	delete file;
 
-            // cho chay tien trinh
-            int id = pTab->ExecUpdate(name);
-            machine->WriteRegister(2, id);
-            delete[] name;
-            IncreasePC();
-            return;
+	// cho chay tien trinh
+	int id = pTab->ExecUpdate(name);
+	machine->WriteRegister(2, id);
+	delete[] name;
+	IncreasePC();
+        return;
         }
         case SC_Join:
         {

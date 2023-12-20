@@ -54,8 +54,6 @@ void StartProcessNoExec(int pid)
 			return;
 		}
 
-		delete filename;
-
 		currentThread->space = space;
 
 		space->InitRegisters(); // set the initial register values

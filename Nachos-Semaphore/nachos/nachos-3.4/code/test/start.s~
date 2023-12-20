@@ -220,6 +220,7 @@ Up:
 	j	$31
 	.end Up
 
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

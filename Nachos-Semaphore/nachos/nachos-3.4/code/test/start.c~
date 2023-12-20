@@ -129,7 +129,7 @@ Yield:
 	syscall
 	j	$31
 	.end Yield
-
+	
 /* PrintChar function */
 	.globl PrintChar
 	.ent	PrintChar
@@ -211,7 +211,7 @@ Down:
 	j	$31
 	.end Down
 	
-/* Up function */
+/* Signal function */
 	.globl Up
 	.ent	Up
 Up:

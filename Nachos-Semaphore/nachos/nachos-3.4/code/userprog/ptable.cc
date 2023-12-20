@@ -17,12 +17,12 @@ PTable::PTable(int size)
 
 	if (size < 0)
 	{
-		DEBUG('a', "\nERROR: Kich thuoc PTable be hon 0!");
+		printf("\nERROR: Kich thuoc PTable be hon 0!");
 		return;
 	}
 	else if (size > 10)
 	{
-		DEBUG('a', "\nERROR: Kich thuoc PTable vuot qua 10!");
+		printf("\nERROR: Kich thuoc PTable vuot qua 10!");
 		return;
 	}
 	else
@@ -42,6 +42,7 @@ PTable::PTable(int size)
 
 		// tao PCB dau tien
 		pcb[0] = new PCB(0);
+		pcb[0]->SetFileName("./test/scheduler");
 	}
 }
 
@@ -49,12 +50,16 @@ PTable::~PTable()
 {
 	int i;
 
-	delete bm;
-	delete bmsem;
+	if (bm != NULL)
+		delete bm;
+
+	if (bmsem != NULL)
+		delete bmsem;
 
 	for (i = 0; i < psize; i++)
 	{
-		delete pcb[i];
+		if (pcb[i] != NULL)
+			delete pcb[i];
 	}
 }
 

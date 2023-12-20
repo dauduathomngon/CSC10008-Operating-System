@@ -29,22 +29,28 @@ PCB::PCB(int id)
 	this->numWait = 0;
 	this->exitcode = 0;
 
-	joinSem = new Semaphore("joinsem", 1);
-	exitSem = new Semaphore("exitsem", 1);
+	joinSem = new Semaphore("joinsem", 0);
+	exitSem = new Semaphore("exitsem", 0);
 	multex = new Semaphore("multex", 1);
 }
 
 PCB::~PCB()
 {
-	delete joinSem;
-	delete exitSem;
-	delete multex;
+	if (joinSem != NULL)
+		delete joinSem;
+
+	if (exitSem != NULL)
+		delete exitSem;
+
+	if (multex != NULL)
+		delete multex;
 
 	// giai phong tien trinh khoi bo nho
-	delete m_thread->space;
-
-	// hoan thanh chay tien trinh
-	m_thread->Finish();
+	if (m_thread != NULL)
+	{
+		m_thread->FreeSpace();
+		m_thread->Finish();
+	}
 }
 
 int PCB::GetExitCode()
@@ -103,13 +109,12 @@ void PCB::ExitWait()
 
 void PCB::DecNumWait()
 {
-	// chua co tien trinh nao wait the nen khong giam so luong wait xuong duoc
-	if (numWait == 0)
-		return;
-
 	// doi den khi duoc thuc hien
 	multex->P();
 	// tien hanh giam so luong wait
+	// chua co tien trinh nao wait the nen khong giam so luong wait xuong duoc
+	if (numWait <= 0)
+		return;
 	numWait--;
 	// giai phong tien trinh
 	multex->V();
