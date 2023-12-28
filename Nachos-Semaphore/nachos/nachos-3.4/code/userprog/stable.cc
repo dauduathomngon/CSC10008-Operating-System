@@ -6,108 +6,102 @@
 // 21120355 - Nguyen Anh Tu
 // 21120511 - Le Nguyen
 // ---------------------------------------------
+
 #include "stable.h"
 
 STable::STable()
 {
-    int i;
+	this->bm = new BitMap(MAX_SEMAPHORE);
 
-    bm = new BitMap(MAX_SEMAPHORE);
-    for (i = 0; i < MAX_SEMAPHORE; i++)
-    {
-        semTab[i] = NULL;
-    }
+	for (int i = 0; i < MAX_SEMAPHORE; i++)
+	{
+		this->semList[i] = NULL;
+	}
 }
 
 STable::~STable()
 {
-    int i;
+	if (this->bm)
+	{
+		delete this->bm;
+		this->bm = NULL;
+	}
 
-    delete bm;
-    bm = NULL;
-
-    for (i = 0; i < MAX_SEMAPHORE; i++)
-    {
-        delete semTab[i];
-        semTab[i] = NULL;
-    }
+	for (int i = 0; i < MAX_SEMAPHORE; i++)
+	{
+		if (this->semList[i])
+		{
+			delete this->semList[i];
+			this->semList[i] = NULL;
+		}
+	}
 }
 
 int STable::Create(char *name, int init)
 {
-    int i;
+	// Check xem semaphore ton tai hay khong ?
+	for (int i = 0; i < MAX_SEMAPHORE; i++)
+	{
+		if (bm->Test(i))
+		{
+			if (strcmp(name, semList[i]->GetName()) == 0)
+			{
+				return -1;
+			}
+		}
+	}
 
-    // Check da ton tai semaphore nay chua?
-    for (i = 0; i < MAX_SEMAPHORE; i++)
-    {
-        if (bm->Test(i))
-        {
-            if (strcmp(name, semTab[i]->GetName()) == 0)
-            {
-                printf("\nERROR: Da ton tai semaphore!");
-                return -1;
-            }
-        }
-    }
+	// Tim slot trong
+	int id = this->FindFreeSlot();
 
-    // Tim slot tren bang semTab trong
-    int id = this->FindFreeSlot();
+	// Neu khong co slot trong
+	if (id < 0)
+	{
+		return -1;
+	}
 
-    // Neu k tim thay thi tra ve -1
-    if (id < 0)
-    {
-        printf("\nERROR: Khong con vi tri trong!");
-        return -1;
-    }
-
-    // Neu tim thay slot trong thi nap Semaphore vao semTab[id]
-    this->semTab[id] = new Sem(name, init);
-    return 0;
+	// Neu co thi tao moi semaphore tai slot trong do
+	this->semList[id] = new SemList(name, init);
+	return 0;
 }
 
 int STable::Wait(char *name)
 {
-    int i;
-    for (i = 0; i < MAX_SEMAPHORE; i++)
-    {
-        // Kiem tra o thu i da duoc nap semaphore chua
-        if (bm->Test(i))
-        {
-            // Neu co thi tien hanh so sanh name voi name cua semaphore trong semTab
-            if (strcmp(name, semTab[i]->GetName()) == 0)
-            {
-                // Neu ton tai thi cho semaphore down();
-                semTab[i]->wait();
-                return 0;
-            }
-        }
-    }
-    printf("\nERROR: Khong ton tai semaphore!");
-    return -1;
+	for (int i = 0; i < MAX_SEMAPHORE; i++)
+	{
+		// Xem vi tri i co semaphore chua
+		if (bm->Test(i))
+		{
+			// So sanh ten semaphore da co voi nam
+			if (strcmp(name, semList[i]->GetName()) == 0)
+			{
+				semList[i]->wait();
+				return 0;
+			}
+		}
+	}
+	printf("\nERROR: Khong ton tai semaphore");
+	return -1;
 }
 
 int STable::Signal(char *name)
 {
-    int i;
-    for (i = 0; i < MAX_SEMAPHORE; i++)
-    {
-        // Kiem tra o thu i da duoc nap semaphore chua
-        if (bm->Test(i))
-        {
-            // Neu co thi tien hanh so sanh name voi name cua semaphore trong semTab
-            if (strcmp(name, semTab[i]->GetName()) == 0)
-            {
-                // Neu ton tai thi cho semaphore up();
-                semTab[i]->signal();
-                return 0;
-            }
-        }
-    }
-    printf("\nERROR: Khong ton tai semaphore!");
-    return -1;
+	for (int i = 0; i < MAX_SEMAPHORE; i++)
+	{
+		if (bm->Test(i))
+		{
+			if (strcmp(name, semList[i]->GetName()) == 0)
+			{
+				semList[i]->signal();
+				return 0;
+			}
+		}
+	}
+	printf("\nERROR: Khong ton tai semaphore");
+	return -1;
 }
 
 int STable::FindFreeSlot()
 {
-    return this->bm->Find();
+	return this->bm->Find();
 }

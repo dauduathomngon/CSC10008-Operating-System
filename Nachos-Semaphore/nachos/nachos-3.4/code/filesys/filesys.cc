@@ -144,38 +144,6 @@ FileSystem::FileSystem(bool format)
         freeMapFile = new OpenFile(FreeMapSector);
         directoryFile = new OpenFile(DirectorySector);
     }
-
-    // ---------------------------------------------
-    // Thanh vien nhom:
-    // 21120518 - Dang An Nguyen
-    // 21120312 - Phan Nguyen Phuong
-    // 21120498 - Do Hoang Long
-    // 21120355 - Nguyen Anh Tu
-    // 21120511 - Le Nguyen
-    // ---------------------------------------------
-
-    // cai dat them
-
-    index = 0;
-
-    int i;
-    for (i = 0; i < 15; i++)
-    {
-        openf[i] = NULL;
-    }
-
-    // nhap tu console (input)
-    this->Create("stdin", 0);
-
-    // xuat ra console (output)
-    this->Create("stdout", 0);
-
-    // vi tri 0 la input
-    openf[index++] = this->Open("stdin", 2);
-    // vi tri 1 la output
-    openf[index++] = this->Open("stdout", 3);
-
-    // bat dau tu vi tri 2 la cac file khac
 }
 
 //----------------------------------------------------------------------
@@ -275,49 +243,32 @@ FileSystem::Open(char *name)
     if (sector >= 0)
         openFile = new OpenFile(sector); // name was found in directory
     delete directory;
-    return openFile; // return NULL if not found
+    // return openFile;				// return NULL if not found
+
+    // Tang pos len cho file ke tiep
+    pos++;
+    return openf[pos - 1];
 }
 
-// ---------------------------------------------
-// Thanh vien nhom:
-// 21120518 - Dang An Nguyen
-// 21120312 - Phan Nguyen Phuong
-// 21120498 - Do Hoang Long
-// 21120355 - Nguyen Anh Tu
-// 21120511 - Le Nguyen
-// ---------------------------------------------
-
-// them ham ho tro type
+// Open File voi type
 OpenFile *FileSystem::Open(char *name, int type)
 {
-    int freeSlot = this->FindFreeSlot();
-
-    if (freeSlot == -1)
-    {
-        printf("\nERROR: Khong con slot trong\n");
-        return NULL;
-    }
-
+    int freeSlot = FindFreeSlot();
     Directory *directory = new Directory(NumDirEntries);
     int sector;
-
     DEBUG('f', "Opening file %s\n", name);
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name);
-
     if (sector >= 0)
         openf[freeSlot] = new OpenFile(sector, type); // name was found in directory
-
     delete directory;
-    // index++;
-    return openf[freeSlot]; // return NULL if not found
+    return openf[freeSlot];
 }
 
-// tim slot trong
+// Tim vi tri chua co file
 int FileSystem::FindFreeSlot()
 {
-    int i;
-    for (i = 2; i < 15; i++)
+    for (int i = 0; i < 10; i++)
     {
         if (openf[i] == NULL)
             return i;

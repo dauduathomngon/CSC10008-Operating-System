@@ -34,8 +34,8 @@ LD = $(GCCDIR)ld
 CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
- 
-all: halt shell matmult sort help testFunction ascii testFile scheduler ping pong scheduler2 ping2 pong2
+
+all: halt shell matmult sort help ascii ping pong pingpong main sinhvien voinuoc testFile
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -66,71 +66,56 @@ matmult: matmult.o start.o
 	$(LD) $(LDFLAGS) start.o matmult.o -o matmult.coff
 	../bin/coff2noff matmult.coff matmult
 
-# ---------------------------------------------
-# Thanh vien nhom:
-# 21120518 - Dang An Nguyen
-# 21120312 - Phan Nguyen Phuong
-# 21120498 - Do Hoang Long
-# 21120355 - Nguyen Anh Tu
-# 21120511 - Le Nguyen
-# ---------------------------------------------
-	
-help.o: help.c
-	$(CC) $(CFLAGS) -c help.c
-help: help.o start.o
-	$(LD) $(LDFLAGS) start.o help.o -o help.coff
+help.o: help.c 
+	$(CC) $(CFLAGS) -c help.c 
+help: help.o start.o 
+	$(LD) $(LDFLAGS) start.o help.o -o help.coff 
 	../bin/coff2noff help.coff help
-	
-testFunction.o: testFunction.c
-	$(CC) $(CFLAGS) -c testFunction.c
-testFunction: testFunction.o start.o
-	$(LD) $(LDFLAGS) start.o testFunction.o -o testFunction.coff
-	../bin/coff2noff testFunction.coff testFunction
-	
-ascii.o: ascii.c
-	$(CC) $(CFLAGS) -c ascii.c
-ascii: ascii.o start.o
-	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff
+
+ascii.o: ascii.c 
+	$(CC) $(CFLAGS) -c ascii.c 
+ascii: ascii.o start.o 
+	$(LD) $(LDFLAGS) start.o ascii.o -o ascii.coff 
 	../bin/coff2noff ascii.coff ascii
-	
-testFile.o: testFile.c
-	$(CC) $(CFLAGS) -c testFile.c
-testFile: testFile.o testFile.o
-	$(LD) $(LDFLAGS) start.o testFile.o -o testFile.coff
-	../bin/coff2noff testFile.coff testFile
-	
-scheduler.o: scheduler.c
-	$(CC) $(CFLAGS) -c scheduler.c
-scheduler: scheduler.o scheduler.o
-	$(LD) $(LDFLAGS) start.o scheduler.o -o scheduler.coff
-	../bin/coff2noff scheduler.coff scheduler
 	
 ping.o: ping.c
 	$(CC) $(CFLAGS) -c ping.c
-ping: ping.o ping.o
+ping: ping.o start.o
 	$(LD) $(LDFLAGS) start.o ping.o -o ping.coff
 	../bin/coff2noff ping.coff ping
-	
+
 pong.o: pong.c
 	$(CC) $(CFLAGS) -c pong.c
-pong: pong.o pong.o
+pong: pong.o start.o
 	$(LD) $(LDFLAGS) start.o pong.o -o pong.coff
 	../bin/coff2noff pong.coff pong
+
+pingpong.o: pingpong.c
+	$(CC) $(CFLAGS) -c pingpong.c
+pingpong: pingpong.o start.o
+	$(LD) $(LDFLAGS) start.o pingpong.o -o pingpong.coff
+	../bin/coff2noff pingpong.coff pingpong
+
+main.o: main.c
+	$(CC) $(CFLAGS) -c main.c
+main: main.o start.o
+	$(LD) $(LDFLAGS) start.o main.o -o main.coff
+	../bin/coff2noff main.coff main
+
+voinuoc.o: voinuoc.c
+	$(CC) $(CFLAGS) -c voinuoc.c
+voinuoc: voinuoc.o start.o
+	$(LD) $(LDFLAGS) start.o voinuoc.o -o voinuoc.coff
+	../bin/coff2noff voinuoc.coff voinuoc
+
+sinhvien.o: sinhvien.c
+	$(CC) $(CFLAGS) -c sinhvien.c
+sinhvien: sinhvien.o start.o
+	$(LD) $(LDFLAGS) start.o sinhvien.o -o sinhvien.coff
+	../bin/coff2noff sinhvien.coff sinhvien
 	
-scheduler2.o: scheduler2.c
-	$(CC) $(CFLAGS) -c scheduler2.c
-scheduler2: scheduler2.o scheduler2.o
-	$(LD) $(LDFLAGS) start.o scheduler2.o -o scheduler2.coff
-	../bin/coff2noff scheduler2.coff scheduler2
-	
-ping2.o: ping2.c
-	$(CC) $(CFLAGS) -c ping2.c
-ping2: ping2.o ping2.o
-	$(LD) $(LDFLAGS) start.o ping2.o -o ping2.coff
-	../bin/coff2noff ping2.coff ping2
-	
-pong2.o: pong2.c
-	$(CC) $(CFLAGS) -c pong2.c
-pong2: pong2.o pong2.o
-	$(LD) $(LDFLAGS) start.o pong2.o -o pong2.coff
-	../bin/coff2noff pong2.coff pong2
+testFile.o: testFile.c
+	$(CC) $(CFLAGS) -c testFile.c
+testFile: testFile.o start.o
+	$(LD) $(LDFLAGS) start.o testFile.o -o testFile.coff
+	../bin/coff2noff testFile.coff testFile

@@ -10,52 +10,39 @@
 #ifndef PTABLE_H
 #define PTABLE_H
 
-#include "pcb.h"
 #include "bitmap.h"
-#include "synch.h"
+#include "pcb.h"
+#include "semaphore.h"
 
-// kich thuoc toi da cua PTable
 #define MAX_PROCESS 10
 
 class PTable
 {
 public:
-	/*
-	 * Khoi tao size PCB de luu size process. Gan gia tri ban dau la null
-	 * Nho khoi tao bm va bmsen de su dung
-	 */
-	PTable();
+	// khởi tạo size đối tượng PCB để lưu size process. Gán giá trị ban đầu là null
+	// nhớ khởi tạo bm và bmsem để sử dụng
 	PTable(int size);
 
-	// huy cac doi tuong da tao
-	~PTable();
+	~PTable(); // hủy các đối tượng đã tạo
 
-	// Xu ly cho system call SC_Exec
-	int ExecUpdate(char *name);
+	int ExecUpdate(char *name); // Xử lý cho system call SC_Exec
 
-	// Xu ly cho system call SC_Exit
-	int ExitUpdate(int ec);
+	int ExitUpdate(int ec); // Xử lý cho system call SC_Exit
 
-	// Xu ly cho system call SC_Join
-	int JoinUpdate(int id);
+	int JoinUpdate(int id); // Xử lý cho system call SC_Join
 
-	// Tim slot trong de luu tien trinh moi
-	int GetFreeSlot();
+	int GetFreeSlot(); // tìm free slot để lưu thông tin cho tiến trình mới
 
-	// Kiem tra co ton tai tien trinh nao voi pid khong
-	bool isExist(int pid);
+	bool IsExist(int pid); // kiểm tra tồn tại processID này không?
 
-	// Khi tien trinh ket thuc, xoa pid cua no ra khoi mang
-	void Remove(int pid);
+	void Remove(int pid); // khi tiến trình kết thúc, delete processID ra khỏi mảng quản lý nó
 
-	// Tra ve ten cua tien trinh
-	char *GetFileName(int id);
+	char *GetFileName(int id); // Trả về tên của tiến trình
 
 private:
-	BitMap *bm; // danh dau cac vi tri da duoc su dung trong PCB
+	BitMap *bm; // đánh dấu các vị trí đã được sử dụng trong pcb
 	PCB *pcb[MAX_PROCESS];
-	int psize;		  // kich thuoc that cua PTable
-	Semaphore *bmsem; // dung de ngan chan truong hop nap 2 tien trinh cung luc
+	int psize;
+	Semaphore *bmsem; // dùng để ngăn chặn trường hợp nạp 2 tiến trình cùng lúc
 };
-
 #endif // PTABLE_H

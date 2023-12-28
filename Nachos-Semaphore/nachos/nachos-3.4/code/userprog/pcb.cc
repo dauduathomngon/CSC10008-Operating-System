@@ -13,44 +13,47 @@
 #include "thread.h"
 #include "addrspace.h"
 
-extern void StartProcessNoExec(int pid);
+extern void StartProcess_2(int pid);
 
 PCB::PCB(int id)
 {
-	// process dau tien (process main)
 	if (id == 0)
 		this->parentID = -1;
 	else
 		this->parentID = currentThread->processID;
 
-	// tien trinh van chua duoc chay
-	this->m_thread = NULL;
+	this->numwait = this->exitcode = this->boolBG = 0;
+	this->thread = NULL;
 
-	this->numWait = 0;
-	this->exitcode = 0;
-
-	joinSem = new Semaphore("joinsem", 0);
-	exitSem = new Semaphore("exitsem", 0);
-	multex = new Semaphore("multex", 1);
+	this->joinsem = new Semaphore("joinsem", 0);
+	this->exitsem = new Semaphore("exitsem", 0);
+	this->multex = new Semaphore("multex", 1);
 }
 
 PCB::~PCB()
 {
-	if (joinSem != NULL)
-		delete joinSem;
 
-	if (exitSem != NULL)
-		delete exitSem;
-
+	if (joinsem != NULL)
+		delete this->joinsem;
+	if (exitsem != NULL)
+		delete this->exitsem;
 	if (multex != NULL)
-		delete multex;
-
-	// giai phong tien trinh khoi bo nho
-	if (m_thread != NULL)
+		delete this->multex;
+	if (thread != NULL)
 	{
-		m_thread->FreeSpace();
-		m_thread->Finish();
+		thread->FreeSpace();
+		thread->Finish();
 	}
+}
+
+int PCB::GetID()
+{
+	return this->thread->processID;
+}
+
+int PCB::GetNumWait()
+{
+	return this->numwait;
 }
 
 int PCB::GetExitCode()
@@ -63,97 +66,78 @@ void PCB::SetExitCode(int ec)
 	this->exitcode = ec;
 }
 
-char *PCB::GetFileName()
+void PCB::JoinWait()
 {
-	return this->filename;
-}
-
-void PCB::SetFileName(char *fn)
-{
-	strcpy(this->filename, fn);
-}
-
-int PCB::GetNumWait()
-{
-	return this->numWait;
-}
-
-int PCB::GetID()
-{
-	return m_thread->processID;
+	// Gọi joinsem->P() để tiến trình chuyển sang trạng thái block và ngừng lại, chờ JoinRelease để thực hiện tiếp.
+	joinsem->P();
 }
 
 void PCB::JoinRelease()
 {
-	// giai phong va cho phep tien trinh chay
-	joinSem->V();
-}
-
-void PCB::JoinWait()
-{
-	// bat tien trinh phai wait khi join, chi chay khi thuc hien lenh JoinRelease()
-	joinSem->P();
-}
-
-void PCB::ExitRelease()
-{
-	// tuong tu nhu join
-	exitSem->V();
+	// Gọi joinsem->V() để giải phóng tiến trình gọi JoinWait().
+	joinsem->V();
 }
 
 void PCB::ExitWait()
 {
-	// tuong tu nhu join
-	exitSem->P();
+	// Gọi exitsem-->V() để tiến trình chuyển sang trạng thái block và ngừng lại, chờ ExitReleaseđể thực hiện tiếp.
+	exitsem->P();
 }
 
-void PCB::DecNumWait()
+void PCB::ExitRelease()
 {
-	// doi den khi duoc thuc hien
-	multex->P();
-	// tien hanh giam so luong wait
-	// chua co tien trinh nao wait the nen khong giam so luong wait xuong duoc
-	if (numWait > 0)
-		--numWait;
-	// giai phong tien trinh
-	multex->V();
+	// Gọi exitsem-->V() để giải phóng tiến trình đang chờ.
+	exitsem->V();
 }
 
 void PCB::IncNumWait()
 {
-	// doi den khi duoc thuc hien
 	multex->P();
-	// tien hanh tang so luong wait
-	++numWait;
-	// giai phong tien trinh
+	++numwait;
 	multex->V();
 }
 
-int PCB::Exec(char *filename, int pid)
+void PCB::DecNumWait()
 {
-	// tranh truong hop nap chong nhieu tien trinh trong luc nap tien trinh
+	multex->P();
+	if (numwait > 0)
+		--numwait;
+	multex->V();
+}
+
+void PCB::SetFileName(char *fn)
+{
+	strcpy(FileName, fn);
+}
+
+char *PCB::GetFileName()
+{
+	return this->FileName;
+}
+
+int PCB::Exec(char *filename, int id)
+{
+	// Gọi mutex->P(); để giúp tránh tình trạng nạp 2 tiến trình cùng 1 lúc.
 	multex->P();
 
-	// tao thread cho tien trinh
-	m_thread = new Thread(filename);
+	// Kiểm tra thread đã khởi tạo thành công chưa, nếu chưa thì báo lỗi là không đủ bộ nhớ, gọi mutex->V() và return.
+	this->thread = new Thread(filename);
 
-	// khong the tao tien trinh
-	if (m_thread == NULL)
+	if (this->thread == NULL)
 	{
-		printf("\nERROR: Khong the tao thread");
+		printf("\nERROR: Khong du bo nho!\n");
 		multex->V();
 		return -1;
 	}
 
-	m_thread->processID = pid;			 // dat pid la id cua thread moi tao
-	parentID = currentThread->processID; // thread hien tai se la cha cua thread moi tao
+	//  Đặt processID của thread này là id.
+	this->thread->processID = id;
+	// Đặt parrentID của thread này là processID của thread gọi thực thi Exec
+	this->parentID = currentThread->processID;
+	// Gọi thực thi Fork(StartProcess_2,id) => Ta cast thread thành kiểu int, sau đó khi xử ký hàm StartProcess ta cast Thread về đúng kiểu của nó.
+	this->thread->Fork(StartProcess_2, id);
 
-	// sau do tien hanh chay thread
-	m_thread->Fork(StartProcessNoExec, pid);
-
-	// giai phong semaphore khi da nap tien trinh xong
 	multex->V();
-
-	// tra ve ID cua process
-	return pid;
+	// Trả về id.
+	return id;
 }

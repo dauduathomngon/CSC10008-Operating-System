@@ -14,6 +14,36 @@
 #include "addrspace.h"
 #include "synch.h"
 
+//----------------------------------------------------------------------
+// StartProcess
+// 	Run a user program.  Open the executable, load it into
+//	memory, and jump to it.
+//----------------------------------------------------------------------
+
+void StartProcess(char *filename)
+{
+    OpenFile *executable = fileSystem->Open(filename);
+    AddrSpace *space;
+
+    if (executable == NULL)
+    {
+        printf("Unable to open file %s\n", filename);
+        return;
+    }
+    space = new AddrSpace(executable);
+    currentThread->space = space;
+
+    delete executable; // close file
+
+    space->InitRegisters(); // set the initial register values
+    space->RestoreState();  // load page table register
+
+    machine->Run(); // jump to the user progam
+    ASSERT(FALSE);  // machine->Run never returns;
+                    // the address space exits
+                    // by doing the syscall "exit"
+}
+
 // ---------------------------------------------
 // Thanh vien nhom:
 // 21120518 - Dang An Nguyen
@@ -23,77 +53,27 @@
 // 21120511 - Le Nguyen
 // ---------------------------------------------
 
-/*
- * Dung de chay mot process trong Nachos thong pTable:
- * - Dau tien check xem co ton tai tien trinh khong, neu co thi lay ten tien trinh
- * - Sau do tao vung nho (space) cho process do (dung constructor char* cua AddrSpace)
- * - Sau do dat currentThread->space la space moi vua tao
- */
-void StartProcessNoExec(int pid)
+void StartProcess_2(int id)
 {
-	// lay ten tien trinh tu bang tien trinh pTab
-	char *filename;
-	filename = pTab->GetFileName(pid);
+    char *fileName = pTab->GetFileName(id);
 
-	if (filename == NULL)
-	{
-		printf("\nERROR: Khong ton tai tien trinh");
-		delete filename;
-		return;
-	}
-	else
-	{
-		AddrSpace *space;
-		space = new AddrSpace(filename);
+    AddrSpace *space;
+    space = new AddrSpace(fileName);
 
-		// khong du vung nho de tao hoac khong the tao
-		if (space == NULL)
-		{
-			printf("\nERROR: Khong the tao vung nho");
-			delete space;
-			return;
-		}
+    if (space == NULL)
+    {
+        printf("\nPCB::Exec : Can't create AddSpace.");
+        return;
+    }
 
-		currentThread->space = space;
+    currentThread->space = space;
 
-		space->InitRegisters(); // set the initial register values
-		space->RestoreState();	// load page table register
+    space->InitRegisters();
+    space->RestoreState();
 
-		machine->Run(); // jump to the user progam
-		ASSERT(FALSE);
-	}
+    machine->Run();
+    ASSERT(FALSE);
 }
-
-//----------------------------------------------------------------------
-// StartProcess
-// 	Run a user program.  Open the executable, load it into
-//	memory, and jump to it.
-//----------------------------------------------------------------------
-
-void StartProcess(char *filename)
-{
-	OpenFile *executable = fileSystem->Open(filename);
-	AddrSpace *space;
-
-	if (executable == NULL)
-	{
-		printf("Unable to open file %s\n", filename);
-		return;
-	}
-	space = new AddrSpace(executable);
-	currentThread->space = space;
-
-	delete executable; // close file
-
-	space->InitRegisters(); // set the initial register values
-	space->RestoreState();	// load page table register
-
-	machine->Run(); // jump to the user progam
-	ASSERT(FALSE);	// machine->Run never returns;
-					// the address space exits
-					// by doing the syscall "exit"
-}
-
 // Data structures needed for the console test.  Threads making
 // I/O requests wait on a Semaphore to delay until the I/O completes.
 
@@ -117,19 +97,19 @@ static void WriteDone(int arg) { writeDone->V(); }
 
 void ConsoleTest(char *in, char *out)
 {
-	char ch;
+    char ch;
 
-	console = new Console(in, out, ReadAvail, WriteDone, 0);
-	readAvail = new Semaphore("read avail", 0);
-	writeDone = new Semaphore("write done", 0);
+    console = new Console(in, out, ReadAvail, WriteDone, 0);
+    readAvail = new Semaphore("read avail", 0);
+    writeDone = new Semaphore("write done", 0);
 
-	for (;;)
-	{
-		readAvail->P(); // wait for character to arrive
-		ch = console->GetChar();
-		console->PutChar(ch); // echo it!
-		writeDone->P();		  // wait for write to finish
-		if (ch == 'q')
-			return; // if q, quit
-	}
+    for (;;)
+    {
+        readAvail->P(); // wait for character to arrive
+        ch = console->GetChar();
+        console->PutChar(ch); // echo it!
+        writeDone->P();       // wait for write to finish
+        if (ch == 'q')
+            return; // if q, quit
+    }
 }

@@ -82,6 +82,15 @@ AddrSpace::AddrSpace(OpenFile *executable)
 									  // at least until we have
 									  // virtual memory
 
+	if (numPages > gBitMap->NumClear())
+	{
+		printf("\nAddrSpace:Load: not enough memory for new process..!");
+		numPages = 0;
+		delete executable;
+		gSemaphore->V();
+		return;
+	}
+
 	DEBUG('a', "Initializing address space, num pages %d, size %d\n",
 		  numPages, size);
 	// first, set up the translation
@@ -89,7 +98,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 	for (i = 0; i < numPages; i++)
 	{
 		pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
-		pageTable[i].physicalPage = i;
+		pageTable[i].physicalPage = gBitMap->Find();
 		pageTable[i].valid = TRUE;
 		pageTable[i].use = FALSE;
 		pageTable[i].dirty = FALSE;
@@ -127,80 +136,56 @@ AddrSpace::AddrSpace(OpenFile *executable)
 // 21120355 - Nguyen Anh Tu
 // 21120511 - Le Nguyen
 // ---------------------------------------------
+
 AddrSpace::AddrSpace(char *filename)
 {
 	NoffHeader noffH;
 	unsigned int i, size, j;
-
-	// số trang cho phần code và phần initData
-	unsigned int numCodePage, numDataPage;
-
-	// kích thước ghi vào trang cuối Code, initData, và trang đầu của initData
-	int lastCodePageSize, lastDataPageSize, firstDataPageSize, tempDataSize;
-
+	unsigned int numCodePage, numDataPage;									 // số trang cho phần code và phần initData
+	int lastCodePageSize, lastDataPageSize, firstDataPageSize, tempDataSize; // kích
+																			 // thước ghi vào trang cuối Code, initData, và trang đầu của initData
 	OpenFile *executable = fileSystem->Open(filename);
-
 	if (executable == NULL)
 	{
 		printf("\nAddrspace::Error opening file: %s", filename);
 		return;
 	}
-
 	// đọc header của file
 	executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-	if ((noffH.noffMagic != NOFFMAGIC) &&
-		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
-	{
+	if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
 		SwapHeader(&noffH);
-	}
-	ASSERT(noffH.noffMagic == NOFFMAGIC)
-
-	addrLock->P();
-
+	ASSERT(noffH.noffMagic == NOFFMAGIC);
+	gSemaphore->P();
 	// how big is address space?
-
-	// we need to increase the size
-	// to leave room for the stack
-	size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
+	size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize; // we need to increase the size to leave room for the stack
 	numPages = divRoundUp(size, PageSize);
 	size = numPages * PageSize;
-
 	// Check the available memory enough to load new process
-	// Debug
-
-	// So trang con trong
-	int numClear = gPhysPageBitMap->NumClear();
-
-	if (numPages > numClear)
+	// debug
+	if (numPages > gBitMap->NumClear())
 	{
 		printf("\nAddrSpace:Load: not enough memory for new process..!");
 		numPages = 0;
 		delete executable;
-		addrLock->P();
+		gSemaphore->V();
 		return;
 	}
-
 	// first, set up the translation
 	pageTable = new TranslationEntry[numPages];
-
 	for (i = 0; i < numPages; i++)
 	{
-		pageTable[i].virtualPage = i;
-		// tim 1 trang trong va danh dau da su dung
-		pageTable[i].physicalPage = gPhysPageBitMap->Find();
+		pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
+		pageTable[i].physicalPage = gBitMap->Find();
 		pageTable[i].valid = TRUE;
 		pageTable[i].use = FALSE;
 		pageTable[i].dirty = FALSE;
 		pageTable[i].readOnly = FALSE; // if the code segment was entirely on
-									   // a separate page, we could set its
-									   // pages to be read-only
-
+		// a separate page, we could set its
+		// pages to be read-only
 		// xóa các trang này trên memory
 		bzero(&(machine->mainMemory[pageTable[i].physicalPage * PageSize]), PageSize);
-		printf("Physical Page: %d \n", pageTable[i].physicalPage);
 	}
-
-	addrLock->V();
+	gSemaphore->V();
 
 	// Calculate numCodePage and numDataPage
 	numCodePage = divRoundUp(noffH.code.size, PageSize);
@@ -220,14 +205,12 @@ AddrSpace::AddrSpace(char *filename)
 		lastDataPageSize = tempDataSize - (numDataPage - 1) * PageSize;
 		firstDataPageSize = PageSize - lastCodePageSize;
 	}
-
 	// Copy the Code segment into memory
 	for (i = 0; i < numCodePage; i++)
 	{
 		// if(noffH.code.size > 0)
 		executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + pageTable[i].physicalPage * PageSize, i < (numCodePage - 1) ? PageSize : lastCodePageSize, noffH.code.inFileAddr + i * PageSize);
 	}
-
 	// Check whether last page of code segment is full and copy the first part of
 	// initData segment into this page
 	if (lastCodePageSize < PageSize)
@@ -247,7 +230,6 @@ AddrSpace::AddrSpace(char *filename)
 	delete executable;
 	return;
 }
-
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 // 	Dealloate an address space.  Nothing for now!

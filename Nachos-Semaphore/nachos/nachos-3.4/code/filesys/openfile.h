@@ -36,35 +36,29 @@ class OpenFile
 	// 21120355 - Nguyen Anh Tu
 	// 21120511 - Le Nguyen
 	// ---------------------------------------------
-
 public:
-	int type; // loai cua file
-	// 0: doc va ghi
-	// 1: chi doc
-	// 2: nhap tu console (stdin)
-	// 3: xuat ra console (stdout)
+	// Type phan loai
+	int type;
 
-	OpenFile(int fileID) // mo file mac dinh (doc va ghi)
+	// Ham mac dinh
+	OpenFile(int f)
 	{
-		file = fileID;
+		file = f;
 		currentOffset = 0;
-		type = 0;
 	}
 
-	OpenFile(int fileID, int fileType) // mo file theo type
+	OpenFile(int f, int t)
 	{
-		file = fileID;
+		file = f;
 		currentOffset = 0;
-		type = fileType;
+		type = t;
 	}
 
 	~OpenFile()
 	{
-		// dong file
 		Close(file);
-	}
+	} // close the file
 
-	// di den vi tri pos trong file
 	int Seek(int position)
 	{
 		Lseek(file, position, 0);
@@ -72,16 +66,12 @@ public:
 		return currentOffset;
 	}
 
-	// doc file tai pos voi do dai la nBytes
 	int ReadAt(char *into, int numBytes, int position)
 	{
-		// di den vi tri pos
 		Lseek(file, position, 0);
-		// doc nBytes
 		return ReadPartial(file, into, numBytes);
 	}
 
-	// ghi vao file chuoi from tai pos voi do dai nBytes
 	int WriteAt(char *from, int numBytes, int position)
 	{
 		Lseek(file, position, 0);
@@ -89,7 +79,6 @@ public:
 		return numBytes;
 	}
 
-	// doc file tai currentOffset voi do dai la nBytes sau do tang currentOffset len nBytes (sau khi doc)
 	int Read(char *into, int numBytes)
 	{
 		int numRead = ReadAt(into, numBytes, currentOffset);
@@ -106,15 +95,11 @@ public:
 
 	int Length()
 	{
-		int len;
-		// di den vi tri de doc do dai
 		Lseek(file, 0, 2);
-		len = Tell(file);
-		// sau do quay ve vi tri hien tai
-		Lseek(file, currentOffset, 0);
-		return len;
+		return Tell(file);
 	}
 
+	// Lay vi tri hien tai cua file
 	int GetCurrentPos()
 	{
 		currentOffset = Tell(file);
@@ -132,15 +117,17 @@ class FileHeader;
 class OpenFile
 {
 public:
-	int type; // loai cua file
-			  // 0: doc va ghi
-			  // 1: chi doc
-			  // 2: nhap tu console (stdin)
-			  // 3: xuat ra console (stdout)
+	// type = -2 --> stdin (console input)
+	// type = -1 --> stdout (console output)
+	// type = 0  --> doc va ghi
+	// type = 1  --> chi doc
+	int type;
 
+	// Ham mac dinh
 	OpenFile(int sector); // Open a file whose header is located
 						  // at "sector" on the disk
 
+	// Open File voi type
 	OpenFile(int sector, int type);
 
 	~OpenFile(); // Close the file
@@ -164,10 +151,8 @@ public:
 				  // than the UNIX idiom -- lseek to
 				  // end of file, tell, lseek back
 
-	int GetCurrentPos()
-	{
-		return seekPosition;
-	}
+	// Lay vi tri hien tai cua file
+	int GetCurrentPos();
 
 private:
 	FileHeader *hdr;  // Header for this file

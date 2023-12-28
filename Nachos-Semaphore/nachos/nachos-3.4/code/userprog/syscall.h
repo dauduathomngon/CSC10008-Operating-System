@@ -141,7 +141,7 @@ OpenFileId Open(char *name, int type);
 /*
  * Dong file voi ID
  */
-void Close(OpenFileId id);
+int Close(OpenFileId id);
 
 /*
  * Thuc hien doc file sau do ghi vao buffer

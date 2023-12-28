@@ -43,6 +43,7 @@
 // implementation is available
 class FileSystem
 {
+public:
 	// ---------------------------------------------
 	// Thanh vien nhom:
 	// 21120518 - Dang An Nguyen
@@ -51,97 +52,85 @@ class FileSystem
 	// 21120355 - Nguyen Anh Tu
 	// 21120511 - Le Nguyen
 	// ---------------------------------------------
-public:
-	// bang mo ta file (gom 15 phan tu)
-	// kiem tra xem file co dang mo khong
-	OpenFile *openf[15];
-	int index;
+
+	// Bang mo ta file
+	OpenFile **openf;
+	// Vi tri
+	int pos;
 
 	FileSystem(bool format)
 	{
-		index = 0;
+		// Cap phat bo nho
+		openf = new OpenFile *[10];
+		pos = 0;
 
-		int i;
-		for (i = 0; i < 15; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			openf[i] = NULL;
 		}
 
-		// nhap tu console (input)
 		this->Create("stdin", 0);
-
-		// xuat ra console (output)
 		this->Create("stdout", 0);
 
-		// vi tri 0 la input
-		openf[index++] = this->Open("stdin", 2);
-		// vi tri 1 la output
-		openf[index++] = this->Open("stdout", 3);
-
-		// bat dau tu vi tri 2 la cac file khac
+		// Console input
+		openf[pos] = this->Open("stdin", -2);
+		pos++; // pos = 1
+		// Console output
+		openf[pos] = this->Open("stdout", -1);
+		pos++;
 	}
 
+	// Destructor
 	~FileSystem()
 	{
-		int i;
-		for (i = 0; i < 15; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			delete openf[i];
 		}
+
+		delete[] openf;
 	}
 
-	// tao file voi size = initialSize
 	bool Create(char *name, int initialSize)
 	{
 		int fileDescriptor = OpenForWrite(name);
+
 		if (fileDescriptor == -1)
-		{
-			printf("\nERROR: Khong the tao file\n");
 			return FALSE;
-		}
 		Close(fileDescriptor);
 		return TRUE;
 	}
 
-	// mo file mac dinh
 	OpenFile *Open(char *name)
 	{
 		int fileDescriptor = OpenForReadWrite(name, FALSE);
+
 		if (fileDescriptor == -1)
-		{
-			printf("\nERROR: Khong the mo file\n");
-			return FALSE;
-		}
+			return NULL;
 		return new OpenFile(fileDescriptor);
 	}
 
-	// mo file voi type
+	// Open File voi type
 	OpenFile *Open(char *name, int type)
 	{
 		int fileDescriptor = OpenForReadWrite(name, FALSE);
+
 		if (fileDescriptor == -1)
-		{
-			printf("\nERROR: Khong the mo file\n");
-			return FALSE;
-		}
+			return NULL;
 		return new OpenFile(fileDescriptor, type);
 	}
 
-	// tim slot trong
+	// Tim vi tri chua co file
 	int FindFreeSlot()
 	{
-		int i;
-		for (i = 2; i < 15; i++)
+		for (int i = 0; i < 10; i++)
 		{
-			// con vi tri trong
 			if (openf[i] == NULL)
 				return i;
 		}
-		// khong con vi tri trong
 		return -1;
 	}
 
-	// xoa file khoi bang mo ta
 	bool Remove(char *name)
 	{
 		return Unlink(name) == 0;
@@ -152,8 +141,10 @@ public:
 class FileSystem
 {
 public:
-	OpenFile *openf[15];
-	int index;
+	// Bang mo ta file
+	OpenFile **openf;
+	// Vi tri
+	int pos;
 
 	FileSystem(bool format); // Initialize the file system.
 							 // Must be called *after* "synchDisk"
@@ -167,15 +158,15 @@ public:
 
 	OpenFile *Open(char *name); // Open a file (UNIX open)
 
-	OpenFile *Open(char *name, int type);
+	OpenFile *Open(char *name, int type); // Open File voi type
+
+	int FindFreeSlot(); // Tim vi tri chua co file
 
 	bool Remove(char *name); // Delete a file (UNIX unlink)
 
 	void List(); // List all the files in the file system
 
 	void Print(); // List all the files and their contents
-
-	int FindFreeSlot();
 
 private:
 	OpenFile *freeMapFile;	 // Bit map of free disk blocks,

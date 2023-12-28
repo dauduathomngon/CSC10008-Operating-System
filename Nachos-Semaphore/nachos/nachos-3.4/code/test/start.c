@@ -129,35 +129,24 @@ Yield:
 	syscall
 	j	$31
 	.end Yield
-	
-/* PrintChar function */
-	.globl PrintChar
-	.ent	PrintChar
-PrintChar:
-	addiu $2,$0,SC_PrintChar
+
+	.globl ReadInt
+	.ent ReadInt
+ReadInt:
+	addiu $2,$0,SC_ReadInt
 	syscall
-	j	$31
-	.end PrintChar
-	
-/* PrintInt function */
+	j 	$31
+	.end ReadInt
+
 	.globl PrintInt
-	.ent	PrintInt
+	.ent PrintInt
 PrintInt:
 	addiu $2,$0,SC_PrintInt
 	syscall
-	j	$31
+	j 	$31
 	.end PrintInt
-	
-/* PrintString function */
-	.globl PrintString
-	.ent	PrintString
-PrintString:
-	addiu $2,$0,SC_PrintString
-	syscall
-	j	$31
-	.end PrintString
-	
-/* ReadChar function */
+
+	.globl ReadString
 	.globl ReadChar
 	.ent	ReadChar
 ReadChar:
@@ -166,59 +155,62 @@ ReadChar:
 	j	$31
 	.end ReadChar
 
-/* ReadInt function */
-	.globl ReadInt
-	.ent	ReadInt
-ReadInt:
-	addiu $2,$0,SC_ReadInt
+  .globl PrintChar
+	.ent	PrintChar
+PrintChar:
+	addiu $2,$0,SC_PrintChar
 	syscall
 	j	$31
-	.end ReadInt
+	.end PrintChar
 	
-/* ReadString function */
-	.globl ReadString
-	.ent	ReadString
+  .globl ReadString
+	.ent ReadString
 ReadString:
 	addiu $2,$0,SC_ReadString
 	syscall
-	j	$31
+	j 	$31
 	.end ReadString
-	
-/* Seek function */
+
+	.globl PrintString
+	.ent PrintString
+PrintString:
+	addiu $2,$0,SC_PrintString
+	syscall
+	j 	$31
+	.end PrintString
+
 	.globl Seek
 	.ent	Seek
-Seek:
-	addiu $2,$0,SC_Seek
+Seek :
+	addiu $2, $0, SC_Seek
 	syscall
 	j	$31
 	.end Seek
-	
-/* Create semaphore */
+
 	.globl CreateSemaphore
 	.ent	CreateSemaphore
 CreateSemaphore:
-	addiu $2,$0,SC_CreateSemaphore
+	addiu $2, $0, SC_CreateSemaphore
 	syscall
 	j	$31
 	.end CreateSemaphore
 
-/* Down function */
 	.globl Down
 	.ent	Down
 Down:
-	addiu $2,$0,SC_Down
+	addiu $2, $0, SC_Down
 	syscall
 	j	$31
 	.end Down
-	
-/* Up function */
+
 	.globl Up
 	.ent	Up
 Up:
-	addiu $2,$0,SC_Up
+	addiu $2, $0, SC_Up
 	syscall
 	j	$31
 	.end Up
+
 
 /* dummy function to keep gcc happy */
         .globl  __main

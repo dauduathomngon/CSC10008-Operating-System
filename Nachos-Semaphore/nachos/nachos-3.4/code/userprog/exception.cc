@@ -47,6 +47,9 @@
 //	"which" is the kind of exception.  The list of possible exceptions
 //	are in machine.h.
 
+#define MAX_FILE_NAME 32
+#define MAX_CHAR 255
+
 // ---------------------------------------------
 // Thanh vien nhom:
 // 21120518 - Dang An Nguyen
@@ -56,9 +59,6 @@
 // 21120511 - Le Nguyen
 // ---------------------------------------------
 
-#define MAX_FILE_NAME 32
-#define MAX_FILE_LENGTH 255
-
 // Input:
 //	- Dia chi cua user space (int)
 //	- Do dai toi da cua buffer (int), thong thuong la 255
@@ -66,12 +66,10 @@
 // Purpose: Copy buffer tu system space chuyen sang cho user space
 char *User2System(int virtAddr, int limit)
 {
-    int i; // index
+    int i; // chi so index
     int oneChar;
     char *kernelBuf = NULL;
-
-    kernelBuf = new char[limit + 1]; // need for terminal string
-                                     //
+    kernelBuf = new char[limit + 1]; // can cho chuoi terminal
     if (kernelBuf == NULL)
         return kernelBuf;
 
@@ -84,7 +82,6 @@ char *User2System(int virtAddr, int limit)
         if (oneChar == 0)
             break;
     }
-
     return kernelBuf;
 }
 
@@ -98,10 +95,8 @@ int System2User(int virtAddr, int len, char *buffer)
 {
     if (len < 0)
         return -1;
-
     if (len == 0)
         return len;
-
     int i = 0;
     int oneChar = 0;
     do
@@ -110,7 +105,6 @@ int System2User(int virtAddr, int len, char *buffer)
         machine->WriteMem(virtAddr + i, 1, oneChar);
         i++;
     } while (i < len && oneChar != 0);
-
     return i;
 }
 
@@ -127,16 +121,10 @@ int System2User(int virtAddr, int len, char *buffer)
 // Tang thanh ghi
 void IncreasePC()
 {
-    //     // Plus 4 for moving to next command
-    //     int nextPC= machine->registers[NextPCReg]+4;
-    //     machine->registers[PrevPCReg]=machine->registers[PCReg];
-    //     machine->registers[PCReg]=machine->registers[NextPCReg];
-    //     machine->registers[NextPCReg]= nextPC;
-    int counter = machine->ReadRegister(PCReg);
-    machine->WriteRegister(PrevPCReg, counter);
-    counter = machine->ReadRegister(NextPCReg);
-    machine->WriteRegister(PCReg, counter);
-    machine->WriteRegister(NextPCReg, counter + 4);
+    int pcAfter = machine->registers[NextPCReg] + 4;           // tang next PC len 4 (vi int 4 byte)
+    machine->registers[PrevPCReg] = machine->registers[PCReg]; // gan previous PC register = current PC register
+    machine->registers[PCReg] = machine->registers[NextPCReg]; // gan current PC register = next PC register
+    machine->registers[NextPCReg] = pcAfter;
 }
 
 void ExceptionHandler(ExceptionType which)
@@ -216,25 +204,6 @@ void ExceptionHandler(ExceptionType which)
              */
             DEBUG('a', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
-            break;
-        }
-
-        case SC_Exit:
-        {
-            /*
-             * Summary: Ham dung de thoat chuong trinh dang chay
-             * Input: truyen vao 0 (nghia la thoat)
-             */
-            int exitStatus = machine->ReadRegister(4);
-            if (exitStatus != 0)
-            {
-                IncreasePC();
-                return;
-            }
-            int res = pTab->ExitUpdate(exitStatus);
-            currentThread->FreeSpace();
-            currentThread->Finish();
-            IncreasePC();
             return;
         }
 
@@ -263,7 +232,7 @@ void ExceptionHandler(ExceptionType which)
             delete buf;
 
             IncreasePC();
-            break;
+            return;
         }
 
         case SC_ReadChar:
@@ -272,7 +241,7 @@ void ExceptionHandler(ExceptionType which)
              * Input: Khong co
              * Output: Tra ve ky tu doc duoc (neu khong phai ky tu hop le, tra ve ky tu rong)
              */
-            char *buffer = new char[255 + 1]();
+            char *buffer = new char[255]();
             int length = synchcons->Read(buffer, 255);
 
             if (length > 1)
@@ -293,7 +262,7 @@ void ExceptionHandler(ExceptionType which)
 
             delete buffer;
             IncreasePC();
-            break;
+            return;
         }
 
         case SC_PrintChar:
@@ -302,12 +271,12 @@ void ExceptionHandler(ExceptionType which)
              * Input: char* c (ky tu duoc nhap vao)
              * Output: In ra ky tu duoc nhap vao
              */
-            char c = (char)machine->ReadRegister(4);
+            char c = machine->ReadRegister(4);
 
             synchcons->Write(&c, 1);
 
             IncreasePC();
-            break;
+            return;
         }
 
         case SC_PrintInt:
@@ -370,7 +339,7 @@ void ExceptionHandler(ExceptionType which)
             int virtualAddress = machine->ReadRegister(4);
             int length = machine->ReadRegister(5);
 
-            char *buffer = new char[length + 1]();
+            char *buffer;
             buffer = User2System(virtualAddress, length);
 
             synchcons->Read(buffer, length);
@@ -388,7 +357,7 @@ void ExceptionHandler(ExceptionType which)
              * Output: Tra ve so nguyen doc duoc (neu khong phai so nguyen hop le, tra ve 0)
              * Note: Ngoai ra so -354.0000000 cung duoc tinh la so nguyen -354
              */
-            char *buffer = new char[255 + 1]();
+            char *buffer = new char[255]();
             int maxBuffer = 255;
             int sign = 1;
             int start = 0;
@@ -476,6 +445,8 @@ void ExceptionHandler(ExceptionType which)
             IncreasePC();
             break;
         }
+
+        // syscall file
         case SC_CreateFile:
         {
             /*
@@ -487,7 +458,7 @@ void ExceptionHandler(ExceptionType which)
             bufAddr = machine->ReadRegister(4); // doc dia chi input
 
             char *buf;
-            buf = User2System(bufAddr, MAX_FILE_LENGTH + 1);
+            buf = User2System(bufAddr, MAX_CHAR + 1);
 
             if (buf == NULL)
             {
@@ -518,42 +489,46 @@ void ExceptionHandler(ExceptionType which)
              * Input: vi tri can den (int) va ID cua file (int)
              * Output: -1 (khong thanh cong), vi tri da di den (thanh cong)
              */
-            int pos = machine->ReadRegister(4);    // vi tri can di den
-            int fileID = machine->ReadRegister(5); // id cua file
 
-            // id cua file phai nam trong bang mo ta file (co gia tri tu 0->14).
-            if (fileID < 0 || fileID > 14)
+            int pos = machine->ReadRegister(4); // Lay vi tri can chuyen con tro den trong file
+            int id = machine->ReadRegister(5);  // Lay id cua file
+            // Kiem tra id cua file truyen vao co nam ngoai bang mo ta file khong
+            if (id < 0 || id > 14)
             {
-                printf("\nERROR: File nam ngoai bang mo ta file");
+                printf("\nKhong the seek vi id nam ngoai bang mo ta file.");
                 machine->WriteRegister(2, -1);
                 IncreasePC();
                 return;
             }
-
-            // file khong ton tai
-            if (fileSystem->openf[fileID] == NULL)
+            // Kiem tra file co ton tai khong
+            if (fileSystem->openf[id] == NULL)
             {
-                printf("\nERROR: File khong ton tai");
+                printf("\nKhong the seek vi file nay khong ton tai.");
                 machine->WriteRegister(2, -1);
                 IncreasePC();
                 return;
             }
-
-            if (fileID == 0 || fileID == 1)
+            // Kiem tra co goi Seek tren console khong
+            if (id == 0 || id == 1)
             {
-                printf("\nERROR: Khong the goi Seek tren console");
+                printf("\nKhong the seek tren file console.");
                 machine->WriteRegister(2, -1);
                 IncreasePC();
                 return;
             }
-
-            // neu pos la -1 thi di den cuoi file (length cua file)
-            if (pos == -1)
-                pos = fileSystem->openf[fileID]->Length();
-
-            // sau do di den vi tri trong file
-            fileSystem->openf[fileID]->Seek(pos);
-            machine->WriteRegister(2, pos);
+            // Neu pos = -1 thi gan pos = Length nguoc lai thi giu nguyen pos
+            pos = (pos == -1) ? fileSystem->openf[id]->Length() : pos;
+            if (pos > fileSystem->openf[id]->Length() || pos < 0) // Kiem tra lai vi tri pos co hop le khong
+            {
+                printf("\nKhong the seek file den vi tri nay.");
+                machine->WriteRegister(2, -1);
+            }
+            else
+            {
+                // Neu hop le thi tra ve vi tri di chuyen thuc su trong file
+                fileSystem->openf[id]->Seek(pos);
+                machine->WriteRegister(2, pos);
+            }
             IncreasePC();
             return;
         }
@@ -564,58 +539,68 @@ void ExceptionHandler(ExceptionType which)
              * Input: ten file (char*) va loai cua file (int)
              * Output: ID cua file trong bang mo ta file neu thanh cong, -1 neu khong thanh cong
              */
-            int virtualAddress = machine->ReadRegister(4); // lay dia chi cua ten file
-            int type = machine->ReadRegister(5);           // lay type cua file
+            int virtAddr;
+            int type;
+            char *filename;
 
-            char *fileName; // doc ten file tu dia chi
-            fileName = User2System(virtualAddress, MAX_FILE_NAME);
+            // check for exception
+            virtAddr = machine->ReadRegister(4); // Doc dia chi cua ten file tai thanh ghi R4
+            type = machine->ReadRegister(5);     // doc type tai thanh ghi R5
 
-            // kiem tra con slot trong khong
-            int freeSlot = fileSystem->FindFreeSlot();
+            filename = User2System(virtAddr, MAX_FILE_NAME);
 
-            // khong con slot trong
-            if (freeSlot == -1)
+            // Neu ten file khong co
+            if (strlen(filename) == 0)
             {
-                printf("\nERROR: Khong con slot trong");
+                printf("\nERROR: Ten file khong ton tai");
                 machine->WriteRegister(2, -1);
-                delete fileName;
+                delete filename;
                 IncreasePC();
                 return;
             }
 
-            // xu ly 3 truong hop
-            // truong hop 1, file binh thuong (khong la stdin hoac stdout)
-            if (type == 0 || type == 1)
-            {
-                // tien hanh mo file
-                fileSystem->openf[freeSlot] = fileSystem->Open(fileName, type);
+            int NullPos = fileSystem->FindFreeSlot();
 
-                // mo file khong thanh cong
-                if (fileSystem->openf[freeSlot] == NULL)
+            if (NullPos != -1) // Neu con vi tri trong
+            {
+                // Console input
+                if (type == -2)
                 {
-                    printf("\nERROR: Khong the mo file");
-                    machine->WriteRegister(2, -1);
-                    delete fileName;
-                    IncreasePC();
-                    return;
+                    machine->WriteRegister(2, 0);
                 }
 
-                // mo file thanh cong
-                machine->WriteRegister(2, freeSlot);
+                // Console output
+                else if (type == -1)
+                {
+                    machine->WriteRegister(2, 1);
+                }
+
+                else if (type == 0 || type == 1)
+                {
+                    fileSystem->openf[NullPos] = fileSystem->Open(filename, type);
+
+                    // Neu khong tim thay file trong directory
+                    if (fileSystem->openf[NullPos] == NULL)
+                    {
+                        printf("\nERROR: Khong tim thay file");
+                        machine->WriteRegister(2, -1);
+                    }
+
+                    // Mo file thanh cong
+                    if (fileSystem->openf[NullPos] != NULL)
+                    {
+                        machine->WriteRegister(2, NullPos);
+                    }
+                }
+                delete filename;
+                IncreasePC();
+                return;
             }
-            else if (type == 2) // truong hop 2, file stdin
-            {
-                // ID cua stdin la 0
-                machine->WriteRegister(2, 0);
-            }
-            else // truong hop 3, file stdout
-            {
-                // ID cua stdout la 1
-                machine->WriteRegister(2, 1);
-            }
-            delete fileName;
+            machine->WriteRegister(2, -1);
+            delete filename;
+
             IncreasePC();
-            break;
+            return;
         }
         case SC_Close:
         {
@@ -624,27 +609,25 @@ void ExceptionHandler(ExceptionType which)
              * Input: ID cua file can dong
              */
             int fileID;
-            fileID = machine->ReadRegister(4); // doc ID cua file
 
-            if (fileID < 0 || fileID > 14)
+            // Lay tham so ID tu thanh ghi R4
+            fileID = machine->ReadRegister(4);
+
+            // Nam trong bang mo ta [0, 9]
+            if (fileID <= 9 && fileID >= 0)
             {
-                printf("\nERROR: File nam ngoai bang mo ta file");
-                IncreasePC();
-                return;
+                // Ton tai file
+                if (fileSystem->openf[fileID] != NULL)
+                {
+                    delete fileSystem->openf[fileID];
+                    fileSystem->openf[fileID] = NULL;
+                    machine->WriteRegister(2, 0);
+                    IncreasePC();
+                    return;
+                }
             }
-
-            // file khong ton tai
-            if (fileSystem->openf[fileID] == NULL)
-            {
-                printf("\nERROR: File khong ton tai");
-                IncreasePC();
-                return;
-            }
-
-            // neu file ton tai
-            // xoa file trong bang file
-            delete fileSystem->openf[fileID];
-            fileSystem->openf[fileID] = NULL;
+            printf("\nERROR: Khong the dong file");
+            machine->WriteRegister(2, -1);
             IncreasePC();
             return;
         }
@@ -655,25 +638,26 @@ void ExceptionHandler(ExceptionType which)
              * Input: buffer (char*), so ky tu (int), id cua file (int)
              * Output: -1 (khong doc duoc), so bytes doc (thanh cong)
              */
-            int virtualAddress = machine->ReadRegister(4); // lay dia chi cua buffer
-            int charCount = machine->ReadRegister(5);      // lay so ky tu
-            int fileID = machine->ReadRegister(6);         // lay id cua file
+            // Lay dia chi ten file
+            int virtAddr = machine->ReadRegister(4);
 
-            int currentPos; // vi tri hien tai cua file
-            int newPos;     // vi tri moi sau khi write
-            char *buf;      // chuoi ky tu doc duoc
+            // Lay so ki tu cho phep
+            int charcount = machine->ReadRegister(5);
 
-            // id cua file phai nam trong bang mo ta file (co gia tri tu 0->14).
-            if (fileID < 0 || fileID > 14)
+            // Lay id file
+            int id = machine->ReadRegister(6);
+
+            // Neu id file khong nam trong bang mo ta file
+            if (id > 9 || id < 0)
             {
-                printf("\nERROR: File nam ngoai bang mo ta file");
+                printf("\nERROR: Khong nam trong bang mo ta file");
                 machine->WriteRegister(2, -1);
                 IncreasePC();
                 return;
             }
 
-            // file khong ton tai
-            if (fileSystem->openf[fileID] == NULL)
+            // Neu file khong ton tai
+            if (fileSystem->openf[id] == NULL)
             {
                 printf("\nERROR: File khong ton tai");
                 machine->WriteRegister(2, -1);
@@ -681,43 +665,55 @@ void ExceptionHandler(ExceptionType which)
                 return;
             }
 
-            // truong hop file stdout (khong doc duoc)
-            if (fileSystem->openf[fileID]->type == 3)
+            // Neu file la stdout (type == -1)
+            if (fileSystem->openf[id]->type == -1)
             {
-                printf("\nERROR: Khong doc file stdout");
+                printf("\nERROR: Khong the doc stdout");
                 machine->WriteRegister(2, -1);
                 IncreasePC();
                 return;
             }
 
-            currentPos = fileSystem->openf[fileID]->GetCurrentPos();
-            // copy chuoi tu user space sang system space
-            buf = User2System(virtualAddress, charCount);
+            // Bo dem de xu li giua User Space va System Space
+            char *tempBuffer = User2System(virtAddr, charcount);
 
-            // xet 2 truong hop
-            // truong hop 1: doc file stdin (doc tu console)
-            if (fileSystem->openf[fileID]->type == 2)
+            // Lay vi tri dau tien cua file noi con tro dang tro toi
+            int beginPos = fileSystem->openf[id]->GetCurrentPos();
+
+            // Neu file la stdin (type == -2)
+            if (fileSystem->openf[id]->type == -2)
             {
-                int size = synchcons->Read(buf, charCount);
-                System2User(virtualAddress, size, buf);
-                machine->WriteRegister(2, size); // tra ve so byte doc duoc
-            }
-            else // cac truong hop con lai
-            {
-                int result = fileSystem->openf[fileID]->Read(buf, charCount);
-                if (result == 0) // doc file rong
-                {
-                    machine->WriteRegister(2, 0);
-                }
-                else
-                {
-                    newPos = fileSystem->openf[fileID]->GetCurrentPos();
-                    System2User(virtualAddress, newPos - currentPos, buf);
-                    machine->WriteRegister(2, newPos - currentPos);
-                }
+                // Read file va tra ve so byte thuc su doc duoc
+                int numBytes = synchcons->Read(tempBuffer, charcount);
+
+                System2User(virtAddr, numBytes, tempBuffer);
+
+                // Tra ve so byte thuc su doc duoc
+                machine->WriteRegister(2, numBytes);
+                delete tempBuffer;
+                IncreasePC();
+                return;
             }
 
-            delete buf;
+            // File binh thuong
+            int checker = fileSystem->openf[id]->Read(tempBuffer, charcount);
+
+            // Doc file thanh cong
+            if (checker > 0)
+            {
+                int endPos = fileSystem->openf[id]->GetCurrentPos();
+                int numBytes = endPos - beginPos;
+
+                System2User(virtAddr, numBytes, tempBuffer);
+                machine->WriteRegister(2, numBytes);
+            }
+            // Cuoi file -> file rong -> doc NULL
+            else
+            {
+                machine->WriteRegister(2, -2);
+            }
+
+            delete tempBuffer;
             IncreasePC();
             return;
         }
@@ -737,7 +733,7 @@ void ExceptionHandler(ExceptionType which)
             char *buf;      // chuoi ky tu doc duoc
 
             // id cua file phai nam trong bang mo ta file (co gia tri tu 0->14).
-            if (fileID < 0 || fileID > 14)
+            if (fileID < 0 || fileID > 9)
             {
                 printf("\nERROR: File nam ngoai bang mo ta file");
                 machine->WriteRegister(2, -1);
@@ -766,7 +762,7 @@ void ExceptionHandler(ExceptionType which)
             // file chi doc (only read, type la 1)
             if (fileSystem->openf[fileID]->type == 1)
             {
-                printf("\nERROR: File only read");
+                printf("\nERROR: File chi doc");
                 machine->WriteRegister(2, -1);
                 IncreasePC();
                 return;
@@ -806,15 +802,17 @@ void ExceptionHandler(ExceptionType which)
                 return;
             }
         }
+
+        // syscall dong bo hoa
         case SC_CreateSemaphore:
         {
             int virtAddr = machine->ReadRegister(4);
             int semval = machine->ReadRegister(5);
 
-            char *name = User2System(virtAddr, MAX_FILE_LENGTH + 1);
+            char *name = User2System(virtAddr, MAX_CHAR + 1);
             if (name == NULL)
             {
-                printf("\n Khong du bo nho trong System");
+                printf("\nERROR: Khong du bo nho trong System");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();
@@ -825,7 +823,7 @@ void ExceptionHandler(ExceptionType which)
 
             if (res == -1)
             {
-                printf("\n Khong the khoi tao Semaphore");
+                printf("\nERROR: Khong the khoi tao Semaphore");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();
@@ -842,11 +840,11 @@ void ExceptionHandler(ExceptionType which)
             int virtualAddress;
             virtualAddress = machine->ReadRegister(4);
             char *name;
-            name = User2System(virtualAddress, MAX_FILE_LENGTH + 1);
+            name = User2System(virtualAddress, MAX_CHAR + 1);
 
             if (name == NULL)
             {
-                printf("\n Khong du bo nho trong System");
+                printf("\nERROR: Khong du bo nho trong System");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();
@@ -857,7 +855,6 @@ void ExceptionHandler(ExceptionType which)
 
             if (res == -1)
             {
-                printf("\n Khong ton tai semaphore!");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();
@@ -874,11 +871,11 @@ void ExceptionHandler(ExceptionType which)
             int virtualAddress;
             virtualAddress = machine->ReadRegister(4);
             char *name;
-            name = User2System(virtualAddress, MAX_FILE_LENGTH + 1);
+            name = User2System(virtualAddress, MAX_CHAR + 1);
 
             if (name == NULL)
             {
-                printf("\n Khong du bo nho trong System");
+                printf("\nERROR: Khong du bo nho trong System");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();
@@ -889,7 +886,6 @@ void ExceptionHandler(ExceptionType which)
 
             if (res == -1)
             {
-                printf("\n Khong ton tai semaphore!");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();
@@ -912,7 +908,7 @@ void ExceptionHandler(ExceptionType which)
             int virtualAddress;
             virtualAddress = machine->ReadRegister(4); // doc dia chi chua ten cua chuong trinh
             char *name;
-            name = User2System(virtualAddress, MAX_FILE_LENGTH + 1); // lay ten cua chuong trinh
+            name = User2System(virtualAddress, MAX_CHAR + 1); // lay ten cua chuong trinh
 
             if (name == NULL)
             {
@@ -927,7 +923,6 @@ void ExceptionHandler(ExceptionType which)
             OpenFile *file = fileSystem->Open(name);
             if (file == NULL)
             {
-                printf("\nERROR: Khong the mo file");
                 machine->WriteRegister(2, -1);
                 delete[] name;
                 IncreasePC();

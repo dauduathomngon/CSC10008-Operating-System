@@ -27,6 +27,7 @@
 //	"sector" -- the location on disk of the file header for this file
 //----------------------------------------------------------------------
 
+// Ham mac dinh
 OpenFile::OpenFile(int sector)
 {
     hdr = new FileHeader;
@@ -34,16 +35,7 @@ OpenFile::OpenFile(int sector)
     seekPosition = 0;
 }
 
-// ---------------------------------------------
-// Thanh vien nhom:
-// 21120518 - Dang An Nguyen
-// 21120312 - Phan Nguyen Phuong
-// 21120498 - Do Hoang Long
-// 21120355 - Nguyen Anh Tu
-// 21120511 - Le Nguyen
-// ---------------------------------------------
-
-// Constructor gom tham so type
+// Open File voi type
 OpenFile::OpenFile(int sector, int type)
 {
     hdr = new FileHeader;
@@ -206,4 +198,10 @@ int OpenFile::WriteAt(char *from, int numBytes, int position)
 int OpenFile::Length()
 {
     return hdr->FileLength();
+}
+
+// Lay vi tri hien tai cua file
+int OpenFile::GetCurrentPos()
+{
+    return seekPosition;
 }
