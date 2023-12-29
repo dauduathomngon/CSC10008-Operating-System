@@ -5,7 +5,7 @@ void main()
 {
 	// Khai bao
 	SpaceId id_Voinuoc, id_Res; // Bien id cho file
-	char temp;					// Bien ki tu luu ki tu doc tu file
+	char c_ReadFile;					// Bien ki tu luu ki tu doc tu file
 	int voi1, voi2;				// Voi 1, voi 2
 	int dungTich;				// Dung tich nuoc cua sinh vien
 	int flagDoneResult;			// Bien co luu dau hieu doc xong file result
@@ -18,7 +18,7 @@ void main()
 	// Xu ly voi nuoc
 	while (1)
 	{
-		Down("end");
+		Down("m_vn");
 
 		// Mo file result.txt de ghi voi nao su dung
 		id_Res = Open("result.txt", 0);
@@ -31,7 +31,7 @@ void main()
 		while (1)
 		{
 			Down("voinuoc");
-			temp = 0;
+			c_ReadFile = 0;
 			// Mo file voi nuoc .txt de doc dung tich
 			id_Voinuoc = Open("voinuoc.txt", 1);
 
@@ -50,16 +50,16 @@ void main()
 
 			while (1)
 			{
-				if (Read(&temp, 1, id_Voinuoc) == -2)
+				if (Read(&c_ReadFile, 1, id_Voinuoc) == -2)
 				{
 					Close(id_Voinuoc);
 					break;
 				}
 
-				if (temp != '*')
+				if (c_ReadFile != '*')
 				{
-					dungTich = dungTich * 10 + (temp - 48);
-					str[len] = temp;
+					dungTich = dungTich * 10 + (c_ReadFile - 48);
+					str[len] = c_ReadFile;
 					len++;
 				}
 				else

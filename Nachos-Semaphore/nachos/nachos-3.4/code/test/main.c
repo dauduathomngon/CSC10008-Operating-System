@@ -3,9 +3,10 @@
 
 int main()
 {
+	int is_Success;
 	SpaceId id_Input, id_Output, id_SV, id_Res;
 	int n = 0, i = 0;
-	char temp;
+	char c_ReadFile;
 
 	if (CreateSemaphore("main", 0) == -1)
 		return 1;
@@ -16,7 +17,7 @@ int main()
 	if (CreateSemaphore("voinuoc", 0) == -1)
 		return 1;
 
-	if (CreateSemaphore("end", 0) == -1)
+	if (CreateSemaphore("m_vn", 0) == -1)
 		return 1;
 
 	if (CreateFile("output.txt") == -1)
@@ -36,11 +37,11 @@ int main()
 
 	while (1)
 	{
-		Read(&temp, 1, id_Input);
-		if (temp != '\n')
+		Read(&c_ReadFile, 1, id_Input);
+		if (c_ReadFile != '\n')
 		{
-			if (temp >= '0' && temp <= '9')
-				n = n * 10 + (temp - '0');
+			if (c_ReadFile >= '0' && c_ReadFile <= '9')
+				n = n * 10 + (c_ReadFile - '0');
 		}
 		else
 			break;
@@ -79,14 +80,14 @@ int main()
 
 		while (1)
 		{
-			if (Read(&temp, 1, id_Input) < 1)
+			if (Read(&c_ReadFile, 1, id_Input) < 1)
 			{
 				break;
 			}
 
-			if (temp != '\n')
+			if (c_ReadFile != '\n')
 			{
-				Write(&temp, 1, id_SV);
+				Write(&c_ReadFile, 1, id_SV);
 			}
 			else
 				break;
@@ -112,14 +113,14 @@ int main()
 		// Doc cac voi vao output.txt
 		while (1)
 		{
-			if (Read(&temp, 1, id_Res) < 1)
+			if (Read(&c_ReadFile, 1, id_Res) < 1)
 			{
 				Write("\r\n", 2, id_Output);
 				Close(id_Res);
-				Up("end");
+				Up("m_vn");
 				break;
 			}
-			Write(&temp, 1, id_Output);
+			Write(&c_ReadFile, 1, id_Output);
 		}
 	}
 

@@ -53,7 +53,7 @@ void StartProcess(char *filename)
 // 21120511 - Le Nguyen
 // ---------------------------------------------
 
-void StartProcess_2(int id)
+void StartProcessNoExec(int id)
 {
     char *fileName = pTab->GetFileName(id);
 

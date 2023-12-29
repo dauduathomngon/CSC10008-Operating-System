@@ -5,13 +5,13 @@ void main()
 {
 	// Khai bao
 	SpaceId id_SV, id_Voinuoc;
-	char temp;
+	char c_ReadFile;
 	int flag_VN;
 	int flag_MAIN;
 	int fileSize;
 	int p_File;
 	//-----------------------------------------------------------
-	Up("end");
+	Up("m_vn");
 
 	while (1)
 	{
@@ -58,10 +58,10 @@ void main()
 		while (p_File < fileSize)
 		{
 			flag_VN = 0;
-			Read(&temp, 1, id_SV);
-			if (temp != ' ')
+			Read(&c_ReadFile, 1, id_SV);
+			if (c_ReadFile != ' ')
 			{
-				Write(&temp, 1, id_Voinuoc);
+				Write(&c_ReadFile, 1, id_Voinuoc);
 			}
 			else
 			{

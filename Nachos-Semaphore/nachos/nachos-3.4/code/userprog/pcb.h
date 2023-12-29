@@ -59,7 +59,7 @@ private:
 	int numwait; // số tiến trình đã join
 
 	char FileName[50];
-	Thread *thread;
+	Thread *m_thread;
 	bool boolBG;
 };
 
