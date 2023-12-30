@@ -181,7 +181,7 @@ int Join(SpaceId id);
 /*
  * Chuong trinh nguoi dung da chay xong
  */
-void Exit(int status);
+void Exit(int exitCode);
 
 #endif /* IN_ASM */
 
