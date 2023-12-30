@@ -563,14 +563,14 @@ void ExceptionHandler(ExceptionType which)
 
             if (NullPos != -1) // Neu con vi tri trong
             {
-                // Console input
-                if (type == -2)
+                // stdin
+                if (type == 2)
                 {
                     machine->WriteRegister(2, 0);
                 }
 
-                // Console output
-                else if (type == -1)
+                // stdout
+                else if (type == 3)
                 {
                     machine->WriteRegister(2, 1);
                 }
@@ -665,8 +665,8 @@ void ExceptionHandler(ExceptionType which)
                 return;
             }
 
-            // Neu file la stdout (type == -1)
-            if (fileSystem->openf[id]->type == -1)
+            // Neu file la stdout (type == 3)
+            if (fileSystem->openf[id]->type == 3)
             {
                 printf("\nERROR: Khong the doc stdout");
                 machine->WriteRegister(2, -1);
@@ -680,8 +680,8 @@ void ExceptionHandler(ExceptionType which)
             // Lay vi tri dau tien cua file noi con tro dang tro toi
             int beginPos = fileSystem->openf[id]->GetCurrentPos();
 
-            // Neu file la stdin (type == -2)
-            if (fileSystem->openf[id]->type == -2)
+            // Neu file la stdin (type == 2)
+            if (fileSystem->openf[id]->type == 2)
             {
                 // Read file va tra ve so byte thuc su doc duoc
                 int numBytes = synchcons->Read(tempBuffer, charcount);
@@ -947,6 +947,20 @@ void ExceptionHandler(ExceptionType which)
             IncreasePC();
             return;
         }
+		case SC_Exit:
+		{
+			int exitStatus = machine->ReadRegister(4);
+			if (exitStatus != 0)
+			{
+				IncreasePC();
+				return;
+			}
+			pTab->ExitUpdate(exitStatus);
+			currentThread->FreeSpace();
+			currentThread->Finish();
+			IncreasePC();
+			return;
+		}
         }
     }
     }
