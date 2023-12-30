@@ -117,10 +117,10 @@ class FileHeader;
 class OpenFile
 {
 public:
-	// type = -2 --> stdin (console input)
-	// type = -1 --> stdout (console output)
 	// type = 0  --> doc va ghi
 	// type = 1  --> chi doc
+	// type = 2 --> stdin (console input)
+	// type = 3 --> stdout (console output)
 	int type;
 
 	// Ham mac dinh
