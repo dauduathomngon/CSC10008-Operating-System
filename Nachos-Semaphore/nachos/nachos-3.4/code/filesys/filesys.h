@@ -72,11 +72,11 @@ public:
 		this->Create("stdin", 0);
 		this->Create("stdout", 0);
 
-		// Console input
-		openf[pos] = this->Open("stdin", -2);
+		// stdin
+		openf[pos] = this->Open("stdin", 2);
 		pos++; // pos = 1
-		// Console output
-		openf[pos] = this->Open("stdout", -1);
+		// stdout
+		openf[pos] = this->Open("stdout", 3);
 		pos++;
 	}
 
